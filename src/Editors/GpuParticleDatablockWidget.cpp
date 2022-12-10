@@ -467,6 +467,11 @@ void GpuParticleDatablockWidget::loadFromResourceClicked()
                     Ogre::Image2 image;
                     image.convertFromTexture(texture, 0, 1, true);
 
+                    if(OgreQtImageHelper::isCompressedFormat(image)) {
+                        QMessageBox::critical(this, tr("Loading texture failed!"), tr("Compressed texture formats not supported by editor!"));
+                        return;
+                    }
+
                     ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[fileInfo.fileName()];
 
                     OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, image, -1);
@@ -509,6 +514,12 @@ void GpuParticleDatablockWidget::loadFromResourceClicked()
         }
 
         ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[fileInfo.fileName()];
+
+        if(OgreQtImageHelper::isCompressedFormat(*imagePtr)) {
+            QMessageBox::critical(this, tr("Loading texture failed!"), tr("Compressed texture formats not supported by editor!"));
+            delete imagePtr;
+            return;
+        }
 
         OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, *imagePtr, -1);
         textureData.mIconPixmap = textureData.mOriginalSizePixmap.scaled(ParticleEditorAssets::TextureData::PixmapSize, ParticleEditorAssets::TextureData::PixmapSize);

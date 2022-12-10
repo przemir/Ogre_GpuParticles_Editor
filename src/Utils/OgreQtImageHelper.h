@@ -20,6 +20,7 @@ class OgreQtImageHelper
 public:
     OgreQtImageHelper();
 
+    static bool isCompressedFormat(const Ogre::Image2& ogreImage);
     static void ogreImageToQImage(QImage& result, const Ogre::Image2& ogreImage, int maxSize = 0);
     static void ogreImageToQPixmap(QPixmap& result, const Ogre::Image2& ogreImage, int maxSize = 0);
 };

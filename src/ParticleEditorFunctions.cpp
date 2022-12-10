@@ -97,6 +97,10 @@ void ParticleEditorFunctions::refreshParticleDatablocks()
         Ogre::Image2 image;
         image.convertFromTexture(texture, 0, 1, true);
 
+        if(OgreQtImageHelper::isCompressedFormat(image)) {
+            continue;
+        }
+
         ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[name];
 
         OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, image, -1);
@@ -178,6 +182,10 @@ void ParticleEditorFunctions::loadAllUnloadedTextures()
 
         Ogre::Image2 image;
         image.load(stream);
+
+        if(OgreQtImageHelper::isCompressedFormat(image)) {
+            continue;
+        }
 
         if(image.getWidth() > 128) {
             float percent = 128.0 / (float)image.getWidth();

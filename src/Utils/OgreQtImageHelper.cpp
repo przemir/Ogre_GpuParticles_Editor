@@ -17,6 +17,11 @@ OgreQtImageHelper::OgreQtImageHelper()
 
 }
 
+bool OgreQtImageHelper::isCompressedFormat(const Ogre::Image2& ogreImage)
+{
+    return Ogre::PixelFormatGpuUtils::isCompressed( ogreImage.getPixelFormat() );
+}
+
 void OgreQtImageHelper::ogreImageToQImage(QImage& result, const Ogre::Image2& ogreImage, int maxSize)
 {
     Ogre::TextureBox texBox = ogreImage.getData(0);
