@@ -1,0 +1,193 @@
+
+@piece( ParticleWorldRandom )
+struct NumberGenerator {
+    float2 seed; // Used to generate values.
+    int seedAddon;
+    
+    // Generate value from range [0; 1) (frac value cannot reach 1)
+    float rand(float2 co)
+    {
+       return frac(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
+    }
+    
+    float generate()
+    {
+        seed.x += seedAddon;
+        return rand(seed);
+    }
+};
+@end
+
+@piece( ParticleWorldBinarySearch )
+
+
+#define BINARY_SEARCH_ITERATION(offset, size, mid, value, track) \
+    size = (size-1)/2;                                           \
+    mid = offset + size;                                         \
+    if(value >= track[mid]) {                                    \
+        offset = mid+1;                                          \
+    }
+    
+// #define BINARY_SEARCH_ITERATION(left, right, mid, value, track)
+//     if(value >= track[mid]) {
+//         left = mid;
+//     }
+//     else {
+//         right = mid;
+//     }
+//     mid = (left+right)/2;
+
+uint binarySearch8(float value, float track[8])
+{
+    uint offset = 1;
+    uint size = 7;
+    uint mid;
+    BINARY_SEARCH_ITERATION(offset, size, mid, value, track)
+    BINARY_SEARCH_ITERATION(offset, size, mid, value, track)
+    if(value < track[offset]) {
+        --offset;
+    }
+
+    return offset;
+}
+
+float getFromTrack1(float time, float times[8], float values[8])
+{
+    uint indexA = binarySearch8(time, times);
+    uint indexB = indexA+1;
+    if(indexB == 8) {
+        indexB = 7;
+    }
+    float timeRange = times[indexB] - times[indexA];
+    float percent = 0.0f;
+    if(timeRange > 0.0f) {
+        percent = (time - times[indexA]) / timeRange;
+    }
+    
+    return lerp(values[indexA], values[indexB], percent);
+}
+
+float2 getFromTrack2(float time, float times[8], float2 values[8])
+{
+    uint indexA = binarySearch8(time, times);
+    uint indexB = indexA+1;
+    if(indexB == 8) {
+        indexB = 7;
+    }
+    float timeRange = times[indexB] - times[indexA];
+    float percent = 0.0f;
+    if(timeRange > 0.0f) {
+        percent = (time - times[indexA]) / timeRange;
+    }
+    
+    return lerp(values[indexA], values[indexB], percent);
+}
+
+float3 getFromTrack3(float time, float times[8], float3 values[8])
+{
+    uint indexA = binarySearch8(time, times);
+    uint indexB = indexA+1;
+    if(indexB == 8) {
+        indexB = 7;
+    }
+    float timeRange = times[indexB] - times[indexA];
+    float percent = 0.0f;
+    if(timeRange > 0.0f) {
+        percent = (time - times[indexA]) / timeRange;
+    }
+    
+    return lerp(values[indexA], values[indexB], percent);
+}
+
+@end
+
+@piece( ParticleWorldStructures )
+
+struct Particle {
+    float3 pos;
+    float rot;
+    float4 colour;
+    float2 size;
+    float spriteNumber;
+    float lifetime;
+    float maxLifetime;
+    float3 dir;
+    float dirVelocity;
+};
+
+struct BucketGroup
+{
+    // uint bucketId;
+    uint emitterInstanceId;
+    uint emitterCoreId;
+    
+    uint lastParticleIndex;
+    uint nextBucketParticleIndex;
+    uint particleCount;
+    
+    // uint timeOffset;
+    // uint fromParticleInBucket;
+    // uint tillParticleInBucket;
+};
+
+struct EmitterCoreData {
+    float4 colourA;
+    float4 colourB;
+    float2 sizeX;
+    float2 sizeY;
+    float2 spotAngle;
+    float2 directionVelocity;
+    float2 lifetime;
+    float nextParticleSpawnTime;
+    float3 gravity;
+    uint useDepthCollision;
+    uint spriteRange;
+    uint useSpriteTrack;
+    float spriteTrackTimes[8];
+    float4 spriteCoordRange[8];
+    uint useColourTrack;
+    float colourTrackTimes[8];
+    float3 colourTrackValues[8];
+    uint useAlphaTrack;
+    float alphaTrackTimes[8];
+    float alphaTrackValues[8];
+    uint useFader;
+    float faderStartPhaseTime;
+    float faderEndPhaseTime;
+    uint useSizeTrack;
+    float sizeTrackTimes[8];
+    float2 sizeTrackValues[8];
+    uint useVelocityTrack;
+    float velocityTrackTimes[8];
+    float velocityTrackValues[8];
+    uint uniformSize;
+    uint billboardType;
+    uint spawnShape;
+    float3 spawnShapeDimensions;
+};
+static const uint BillboardType_Point = 0;
+static const uint BillboardType_OrientedSelf = 2;
+
+struct EmitterInstanceData {
+    float4x4 emitterLocation;
+    uint run;
+    
+    float3 getEmitterPosition() { 
+        return float3(emitterLocation._41, emitterLocation._42, emitterLocation._43);
+    }
+};
+
+struct AtlasUV {
+    float2 bottomLeft;
+    float2 topRight;
+};
+
+struct ParticleWorld {
+    float4x4 prevCameraVP;
+    float4x4 prevCameraInvVP;
+    float2 cameraProjectionParamsAB;
+    float elapsedTime;
+    uint randomIteration;
+};
+
+@end

@@ -1,0 +1,39 @@
+{
+	"systems":
+	{
+		"Examples/Sparks":
+		{
+			"emitters":
+			[
+				{
+					"pos": [0, 0, 0],
+					"rot": [1, 0, 0, 0],
+					"spriteMode": "",
+					"datablock": "Examples/SparkParticle",
+					"spriteTrack": [],
+					"emitterLifetime": 0.2,
+					"emissionRate": 0,
+					"burstMode": true,
+					"burstParticles": 250,
+					"spawnShape": "Sphere",
+					"spawnShapeDimensions": [0.1, 0, 0],
+					"faderMode": "Enabled",
+					"particleFaderStartTime": 0.1,
+					"particleFaderEndTime": 0.2,
+					"uniformSize": false,
+					"billboardType": "OrientedSelf",
+					"colourA": [0.925, 0.82, 0.412, 1],
+					"colourB": [0.925, 0.82, 0.412, 1],
+					"direction": [0, 0, 0],
+					"gravity": [0, -1, 0],
+					"useDepthCollision": true,
+					"particleLifetime": [2, 3],
+					"size": [0.01, 0.01],
+					"sizeY": [0.08, 0.08],
+					"spotAngle": [0, 3.14159],
+					"directionVelocity": [3, 3.5]
+				}
+			]
+		}
+	}
+}

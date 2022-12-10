@@ -1,0 +1,67 @@
+
+fragment_program Postprocess/Copyback_Depth_ps_GLSL glsl
+{
+	source Copyback_Depth_ps.glsl
+	default_params
+	{
+		param_named depthTexture int 0
+	}
+}
+
+fragment_program Postprocess/Copyback_Depth_ps_VK glslvk
+{
+	source Copyback_Depth_ps.glsl
+}
+
+fragment_program Postprocess/Copyback_Depth_ps_HLSL hlsl
+{
+	source Copyback_Depth_ps.hlsl
+	entry_point main
+	target ps_5_0 ps_4_0 ps_4_0_level_9_1 ps_4_0_level_9_3
+}
+
+fragment_program Postprocess/Copyback_Depth_ps_Metal metal
+{
+	source Copyback_Depth_ps.metal
+	shader_reflection_pair_hint Ogre/Compositor/Quad_vs
+}
+
+fragment_program Postprocess/Copyback_Depth_ps unified
+{
+	delegate Postprocess/Copyback_Depth_ps_GLSL
+	delegate Postprocess/Copyback_Depth_ps_VK
+	delegate Postprocess/Copyback_Depth_ps_HLSL
+	delegate Postprocess/Copyback_Depth_ps_Metal
+}
+
+// Downscales resolution of input depth texture by half (w/2 x h/2)
+// using a max filter (max depth of all 4 neighbours)
+material Postprocess/Copyback_Depth
+{
+	technique
+	{
+		pass
+		{
+			depth_check on
+			depth_write on
+			
+			depth_func always_pass
+
+			cull_hardware none
+
+			vertex_program_ref Ogre/Compositor/Quad_vs
+			{
+			}
+
+			fragment_program_ref Postprocess/Copyback_Depth_ps
+			{
+			}
+
+			texture_unit depthTexture
+			{
+				filtering			none
+				tex_address_mode	clamp
+			}
+		}
+	}
+}
