@@ -15,7 +15,3 @@ Alternatively create this folder and copy those files from Ogre.
 Release build executable should be inside "./bin/Release/" folder, debug inside "./bin/Debug/" folder.
 All needed dll should be placed there (except plugins which will go inside "./bin/Release/Plugins" or "./bin/Debug/Plugins" folder).
 Currently only RenderSystem_Direct3D11.dll (RenderSystem_Direct3D11_d.dll) is supported.
-
-# Tips
-
-You may add to resources.cfg paths to textures below \[Custom\]
