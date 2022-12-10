@@ -10,7 +10,7 @@ QT       += core gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += OGRE_ENABLED
-CONFIG += SHOW_OUTPUT_SHADERS
+DEFINES += SHOW_OUTPUT_SHADERS
 
 # Common settings, compiler flags etc.
 DEFINES -= UNICODE
