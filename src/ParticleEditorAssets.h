@@ -11,7 +11,7 @@
 #include <QPixmap>
 #include <QMap>
 #include <QIcon>
-
+#include <OgreImage2.h>
 
 class ParticleEditorAssets
 {
@@ -43,9 +43,12 @@ public:
     QMap<QString, DatablockData> mDatablocks;
 
     QPixmap mNoTextureIconPixmap;
+    QPixmap mCompressedTextureIconPixmap;
 
     TextureData* getTexture(const QString& name);
     DatablockData* getDatablock(const QString& name);
+
+    void generatePixmapToTexture(const QString& name, const Ogre::Image2& image);
 };
 
 #endif

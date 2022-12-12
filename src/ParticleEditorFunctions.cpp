@@ -97,14 +97,10 @@ void ParticleEditorFunctions::refreshParticleDatablocks()
         Ogre::Image2 image;
         image.convertFromTexture(texture, 0, 1, true);
 
+        data.mParticleEditorAssets->generatePixmapToTexture(name, image);
         if(OgreQtImageHelper::isCompressedFormat(image)) {
-            continue;
+//            QMessageBox::warning(this, tr("Loading texture completed!"), tr("Compressed texture formats may not be displayed as editor's icons!"));
         }
-
-        ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[name];
-
-        OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, image, -1);
-        textureData.mIconPixmap = textureData.mOriginalSizePixmap.scaled(ParticleEditorAssets::TextureData::PixmapSize, ParticleEditorAssets::TextureData::PixmapSize);
     }
 
     for (int i = 0; i < particleDatablocks.size(); ++i) {
@@ -183,25 +179,31 @@ void ParticleEditorFunctions::loadAllUnloadedTextures()
         Ogre::Image2 image;
         image.load(stream);
 
+        data.mParticleEditorAssets->generatePixmapToTexture(name, image);
         if(OgreQtImageHelper::isCompressedFormat(image)) {
-            continue;
+//            QMessageBox::warning(this, tr("Loading texture completed!"), tr("Compressed texture formats may not be displayed as editor's icons!"));
         }
 
-        if(image.getWidth() > 128) {
-            float percent = 128.0 / (float)image.getWidth();
-            image.resize(128, image.getHeight()*percent);
-        }
 
-        ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[name];
+//        if(OgreQtImageHelper::isCompressedFormat(image)) {
+//            continue;
+//        }
 
-//        QIcon icon(archiveName);
-//        textureData.mOriginalSizePixmap = QPixmap(archiveName);
+//        if(image.getWidth() > 128) {
+//            float percent = 128.0 / (float)image.getWidth();
+//            image.resize(128, image.getHeight()*percent);
+//        }
 
-        OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, image, -1);
-        textureData.mIconPixmap = textureData.mOriginalSizePixmap.scaled(ParticleEditorAssets::TextureData::PixmapSize, ParticleEditorAssets::TextureData::PixmapSize);
+//        ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[name];
 
-//        textureData.mIcon = QIcon(archiveName);
-//        icon;
+////        QIcon icon(archiveName);
+////        textureData.mOriginalSizePixmap = QPixmap(archiveName);
+
+//        OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, image, -1);
+//        textureData.mIconPixmap = textureData.mOriginalSizePixmap.scaled(ParticleEditorAssets::TextureData::PixmapSize, ParticleEditorAssets::TextureData::PixmapSize);
+
+////        textureData.mIcon = QIcon(archiveName);
+////        icon;
     }
 }
 

@@ -467,15 +467,10 @@ void GpuParticleDatablockWidget::loadFromResourceClicked()
                     Ogre::Image2 image;
                     image.convertFromTexture(texture, 0, 1, true);
 
+                    data.mParticleEditorAssets->generatePixmapToTexture(fileInfo.fileName(), image);
                     if(OgreQtImageHelper::isCompressedFormat(image)) {
-                        QMessageBox::critical(this, tr("Loading texture failed!"), tr("Compressed texture formats not supported by editor!"));
-                        return;
+            //            QMessageBox::warning(this, tr("Loading texture completed!"), tr("Compressed texture formats may not be displayed as editor's icons!"));
                     }
-
-                    ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[fileInfo.fileName()];
-
-                    OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, image, -1);
-                    textureData.mIconPixmap = textureData.mOriginalSizePixmap.scaled(ParticleEditorAssets::TextureData::PixmapSize, ParticleEditorAssets::TextureData::PixmapSize);
                 }
             }
             else {
@@ -513,16 +508,11 @@ void GpuParticleDatablockWidget::loadFromResourceClicked()
             return;
         }
 
-        ParticleEditorAssets::TextureData& textureData = data.mParticleEditorAssets->mTextures[fileInfo.fileName()];
-
+        data.mParticleEditorAssets->generatePixmapToTexture(fileInfo.fileName(), *imagePtr);
         if(OgreQtImageHelper::isCompressedFormat(*imagePtr)) {
-            QMessageBox::critical(this, tr("Loading texture failed!"), tr("Compressed texture formats not supported by editor!"));
-            delete imagePtr;
-            return;
+//            QMessageBox::warning(this, tr("Loading texture completed!"), tr("Compressed texture formats may not be displayed as editor's icons!"));
         }
 
-        OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, *imagePtr, -1);
-        textureData.mIconPixmap = textureData.mOriginalSizePixmap.scaled(ParticleEditorAssets::TextureData::PixmapSize, ParticleEditorAssets::TextureData::PixmapSize);
 
         if(forceReloadTexture) {
             textureManager->destroyTexture(texture);

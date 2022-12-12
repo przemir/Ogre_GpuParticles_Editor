@@ -7,12 +7,33 @@
 
 #include "ParticleEditorAssets.h"
 
+#include <OgreQtImageHelper.h>
+#include <QPainter>
+
 const int ParticleEditorAssets::TextureData::PixmapSize = 128;
 
 ParticleEditorAssets::ParticleEditorAssets()
 {
-    mNoTextureIconPixmap = QPixmap(TextureData::PixmapSize, TextureData::PixmapSize);
-    mNoTextureIconPixmap.fill(QColor(255, 255, 255, 255));
+    {
+        mNoTextureIconPixmap = QPixmap(TextureData::PixmapSize, TextureData::PixmapSize);
+        mNoTextureIconPixmap.fill(QColor(255, 255, 255, 255));
+
+        QPainter painter( &mNoTextureIconPixmap );
+        painter.setFont( QFont("Arial", 16) );
+        painter.setBrush(QBrush(Qt::black));
+        painter.drawText( QPoint(25, 100), "Empty" );
+    }
+
+    {
+        mCompressedTextureIconPixmap = QPixmap(TextureData::PixmapSize, TextureData::PixmapSize);
+        mCompressedTextureIconPixmap.fill(QColor(128, 128, 128, 255));
+
+        QPainter painter( &mCompressedTextureIconPixmap );
+        painter.setFont( QFont("Arial", 12) );
+        painter.setBrush(QBrush(Qt::black));
+        painter.drawText( QPoint(10, 100), "Compressed" );
+    }
+
 }
 
 ParticleEditorAssets::TextureData* ParticleEditorAssets::getTexture(const QString& name)
@@ -31,4 +52,17 @@ ParticleEditorAssets::DatablockData* ParticleEditorAssets::getDatablock(const QS
         return &it.value();
     }
     return nullptr;
+}
+
+void ParticleEditorAssets::generatePixmapToTexture(const QString& name, const Ogre::Image2& image)
+{
+    TextureData& textureData = mTextures[name];
+    if(OgreQtImageHelper::isCompressedFormat(image)) {
+        textureData.mOriginalSizePixmap = mCompressedTextureIconPixmap;
+        textureData.mIconPixmap = mCompressedTextureIconPixmap;
+    }
+    else {
+        OgreQtImageHelper::ogreImageToQPixmap(textureData.mOriginalSizePixmap, image, -1);
+        textureData.mIconPixmap = textureData.mOriginalSizePixmap.scaled(ParticleEditorAssets::TextureData::PixmapSize, ParticleEditorAssets::TextureData::PixmapSize);
+    }
 }
