@@ -59,6 +59,7 @@ private:
 
 //    QPushButton* mImageButton;
     QLabel* mImageLabel;
+    QLabel* mImageNameLabel;
 
     QLabel* mFlipbookSizeLabel;
     QSpinBox* mFlipbookSizeXSpinBox;

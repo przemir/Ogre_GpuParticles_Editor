@@ -73,6 +73,13 @@ GpuParticleDatablockWidget::GpuParticleDatablockWidget(ParticleEditorData& _data
     }
 
     {
+        mImageNameLabel = new QLabel();
+        mImageNameLabel->setAlignment(Qt::AlignHCenter);
+
+        grid->addWidget(mImageNameLabel, row++, 0, 1, 3);
+    }
+
+    {
         QString tooltipStr = tr("Load images from resources or import new ones\n(if image is outside of resources then name cannot be repeated).");
 
         QLabel* label = new QLabel(tr("Load or import file:"));
@@ -332,7 +339,17 @@ void GpuParticleDatablockWidget::updateImage()
     ParticleEditorAssets::TextureData* textureData = nullptr;
     if(texture) {
         QString str = QString::fromStdString(texture->getNameStr());
-        textureData =  data.mParticleEditorAssets->getTexture(str);
+        textureData = data.mParticleEditorAssets->getTexture(str);
+
+        if(!textureData) {
+            mImageNameLabel->setText(str + " (missing)");
+        }
+        else {
+            mImageNameLabel->setText(str);
+        }
+    }
+    else {
+        mImageNameLabel->setText(QString());
     }
 
     if(textureData) {

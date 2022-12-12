@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mResourcesCfg = "resources.cfg";
 
-//    QFile file("qtcreatorDarkStylesheet.css");
+//    QFile file("darkStylesheet.css");
 //    file.open(QFile::ReadOnly);
 //    QString styleSheet = QLatin1String(file.readAll());
 
