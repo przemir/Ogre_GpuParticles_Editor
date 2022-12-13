@@ -8,6 +8,7 @@
 
 #include <OgreHlms.h>
 #include <OgreHlmsJson.h>
+#include <OgreHlmsCompute.h>
 #include <OgreHlmsUnlit.h>
 #include <OgreHlmsUnlitDatablock.h>
 #include <OgreFileSystem.h>
@@ -112,6 +113,12 @@ MainWindow::MainWindow(QWidget *parent)
             QAction* saveParticleDatablockAction = new QAction(tr("Save particle datablock"));
             connect(saveParticleDatablockAction, SIGNAL(triggered(bool)), this, SLOT(saveParticleDatablock()));
             fileMenu->addAction(saveParticleDatablockAction);
+
+            fileMenu->addSeparator();
+
+            QAction* reloadShadersAction = new QAction(tr("Reload shaders (particle and compute)"));
+            connect(reloadShadersAction, SIGNAL(triggered(bool)), this, SLOT(reloadParticleShaders()));
+            fileMenu->addAction(reloadShadersAction);
 
             fileMenu->addSeparator();
 
@@ -1099,4 +1106,19 @@ void MainWindow::setCameraFromTopAction()
 void MainWindow::setCameraFromBottomAction()
 {
     mRenderer->setCamera(Ogre::Vector3(0.0f, -5.0f, 0.0f));
+}
+
+void MainWindow::reloadParticleShaders()
+{
+    //Hot reload of Particle shaders.
+    Ogre::Root *root = mParticleEditorData->getRoot();
+    Ogre::HlmsManager *hlmsManager = root->getHlmsManager();
+
+    Ogre::Hlms *hlms = hlmsManager->getHlms( HlmsParticle::ParticleHlmsType );
+    Ogre::GpuProgramManager::getSingleton().clearMicrocodeCache();
+    hlms->reloadFrom( hlms->getDataFolder() );
+
+    Ogre::HlmsCompute *hlmsCompute = hlmsManager->getComputeHlms();
+    hlmsCompute->clearShaderCache();
+    hlmsCompute->reloadFrom( hlmsCompute->getDataFolder() );
 }

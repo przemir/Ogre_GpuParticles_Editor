@@ -84,6 +84,8 @@ private slots:
     void setCameraFromRightAction();
     void setCameraFromTopAction();
     void setCameraFromBottomAction();
+
+    void reloadParticleShaders();
 };
 
 #endif
