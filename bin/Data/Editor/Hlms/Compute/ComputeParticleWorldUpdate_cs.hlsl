@@ -79,7 +79,22 @@ void main
     // uint particleIndex = entry.bucketId * BucketSize + localId;
     #define particle particleDataList[particleIndex]
     #define emitterCore emitterCoreData[entry.emitterCoreId]
+    #define emitterInstance emitterInstanceData[entry.emitterInstanceId]
+
     float elapsedTime = world.elapsedTime;
+
+@property(initLocationInUpdate)
+    if(particle.lifetime < 0.0f ) {
+        particle.lifetime = 0.0f;
+        
+        // particle.pos after creation will be in local coordinates
+        float4 localPos = float4(particle.pos, 1.0);
+        particle.pos = mul(localPos, emitterInstance.emitterLocation).xyz;
+        
+        float3x3 emitterRotMatrix = (float3x3)emitterInstance.emitterLocation;
+        particle.dir = mul(particle.dir, emitterRotMatrix);
+    }
+@end
 
 	// float fDepth = depthTexture.SampleLevel( depthSamplerState, float2(0.0, 0.0), 0 ).x;
 	// float linearDepth = world.cameraProjectionParamsAB.y / (fDepth - world.cameraProjectionParamsAB.x);
@@ -131,7 +146,7 @@ void main
 
     particle.lifetime += elapsedTime;
     
-    if(particle.lifetime < 0.0f || particle.lifetime > particle.maxLifetime) {
+    if(particle.lifetime > particle.maxLifetime) {
         return;
     }
     

@@ -286,6 +286,12 @@ private:
     /// Depth texture is used to particle depth buffer collision.
     bool mUseDepthTexture = true;
 
+    /// Some initialization steps will be in update shader.
+    /// In case where we create whole bucket particles ahead of time,
+    /// there is no knowing where emitter will for those instances
+    /// attached to Ogre::SceneNode.
+    bool mInitLocationInUpdate = true;
+
     /// Compositor contains depth buffer needed by depth collisions.
     /// Only needed if mUseDepthTexture == true
     Ogre::CompositorWorkspace* mCompositorWorkspace;

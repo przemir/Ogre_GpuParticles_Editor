@@ -70,12 +70,15 @@ void main
     random.seed = float2(particleIndex, particleWorld[0].randomIteration);
     random.seedAddon = MaxParticles+1;
     
+@property(!initLocationInUpdate)
     particle.lifetime = 0.0;
-//    particle.pos = float3(0.0, 0.0, 0.0);
-    particle.pos = emitterInstance.getEmitterPosition();
-    
-    float3x3 emitterRotMatrix = (float3x3)emitterInstance.emitterLocation;
-    
+@else
+    particle.lifetime = -1.0;
+@end
+    particle.maxLifetime = lerp(emitterCore.lifetime.x, emitterCore.lifetime.y, random.generate());
+
+
+    particle.pos = float3(0.0, 0.0, 0.0);
     if(emitterCore.spawnShape == 1) {
         // box shape
         
@@ -83,8 +86,8 @@ void main
                              lerp(0.0, emitterCore.spawnShapeDimensions.y, random.generate()),
                              lerp(0.0, emitterCore.spawnShapeDimensions.z, random.generate()) );
         vec -= emitterCore.spawnShapeDimensions / 2.0;
-        vec = mul(vec, emitterRotMatrix);
-        particle.pos += vec;
+        
+        particle.pos = vec;
     }
     else if(emitterCore.spawnShape == 2) {
         // sphere shape
@@ -100,7 +103,7 @@ void main
         vec = mul(vec, sphereVMatrix);
         vec = mul(vec, sphereHMatrix);
         
-        particle.pos += vec;
+        particle.pos = vec;
     }
     else if(emitterCore.spawnShape == 3) {
         // disc shape
@@ -112,8 +115,13 @@ void main
         float3 vec = float3(0.0, 0.0, r);
         vec = mul(vec, sphereHMatrix);
     
-        particle.pos += vec;
+        particle.pos = vec;
     }
+    
+@property(!initLocationInUpdate)
+    float4 localPos = float4(particle.pos, 1.0);
+    particle.pos = mul(localPos, emitterInstance.emitterLocation).xyz;
+@end
     
     particle.rot = 0.0;
     float sizeX = lerp(emitterCore.sizeX.x, emitterCore.sizeX.y, random.generate());
@@ -135,10 +143,13 @@ void main
     float3 dir = mul(float3(0.0, 1.0, 0.0), xRot);
     dir = mul(dir, yRot);
     
-    particle.maxLifetime = lerp(emitterCore.lifetime.x, emitterCore.lifetime.y, random.generate());
-
-    //particle.dir = dir;
+@property(!initLocationInUpdate)
+    float3x3 emitterRotMatrix = (float3x3)emitterInstance.emitterLocation;
     particle.dir = mul(dir, emitterRotMatrix);
+@else
+    particle.dir = dir;
+@end
+
     particle.dirVelocity = lerp(emitterCore.directionVelocity.x, emitterCore.directionVelocity.y, random.generate());
     
     if(emitterCore.spriteRange != 0) {

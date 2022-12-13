@@ -165,6 +165,7 @@ GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
     , mGroupsPerBucket(0)
     , mHlmsParticleListener(hlmsParticleListener)
     , mUseDepthTexture(useDepthTexture)
+    , mInitLocationInUpdate(true)
     , mCompositorWorkspace(compositorWorkspace)
     , mDepthTextureCompositorNode(depthTextureCompositorNode)
     , mDepthTextureName(depthTextureName)
@@ -1479,7 +1480,7 @@ void GpuParticleSystemWorld::emitParticleCreateGpu()
             //            Ogre::uint32 firstParticle = (emitterInstance.mParticleArrayStart + emitterInstance.mParticleCount) % emitterInstance.mEmitterParticleMaxCount;
             //            Ogre::uint32 lastParticle = (emitterInstance.mParticleArrayStart + emitterInstance.mParticleCreatedCount + particlesToCreate - 1) % emitterInstance.mEmitterParticleMaxCount;
 
-            if(emitterInstance.isStatic()) {
+            if(emitterInstance.isStatic() || mInitLocationInUpdate) {
 
                 if(!emitterInstance.mGpuParticleEmitter->mBurstMode) {
                     // Create whole bucket of particles ahead of time.
@@ -1785,6 +1786,9 @@ HlmsComputeJob* GpuParticleSystemWorld::getParticleCreateComputeJob()
         job->setInformHlmsOfTextureData(false);
         job->setNumUavUnits(1);
         job->setNumTexUnits(4);
+        if(mInitLocationInUpdate) {
+            job->setProperty(Ogre::IdString("initLocationInUpdate"), 1);
+        }
     }
     return job;
 }
@@ -1811,6 +1815,9 @@ HlmsComputeJob* GpuParticleSystemWorld::getParticleUpdateComputeJob()
         if(mUseDepthTexture) {
             ++texUnits;
             job->setProperty(Ogre::IdString("useDepthTexture"), 1);
+        }
+        if(mInitLocationInUpdate) {
+            job->setProperty(Ogre::IdString("initLocationInUpdate"), 1);
         }
         job->setNumTexUnits(texUnits);
         //        job->setConstBuffer();
