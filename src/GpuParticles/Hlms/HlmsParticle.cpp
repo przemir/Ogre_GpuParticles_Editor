@@ -111,11 +111,22 @@ void HlmsParticle::calculateHashForPreCreate(Ogre::Renderable* renderable, Ogre:
     {
         setProperty( "particleWorldEnabled", 1 );
 
-        Ogre::Renderable::CustomParameterMap::const_iterator it = customParams.find(GpuParticleSystemWorld::RenderableCustomParamBucketSize);
-        if(it != customParams.end()) {
-            Ogre::Vector4 vec = it->second;
-            setProperty( "BucketSize", (Ogre::uint32)vec.x);
+        GpuParticleSystemWorld::ParticleRenderable* particleRenderable = dynamic_cast<GpuParticleSystemWorld::ParticleRenderable*>(renderable);
+        GpuParticleSystemWorld* particleSystemWorld = particleRenderable->getGpuParticleSystemWorld();
+
+        const GpuParticleSystemWorld::AffectorList& affectorList = particleSystemWorld->getRegisteredAffectorList();
+        for (size_t i = 0; i < affectorList.size(); ++i) {
+            const GpuParticleAffector* affector = affectorList[i];
+            setProperty(affector->getAffectorProperty(), 1 );
         }
+
+        setProperty( "BucketSize", particleSystemWorld->getBucketSize());
+
+//        Ogre::Renderable::CustomParameterMap::const_iterator it = customParams.find(GpuParticleSystemWorld::RenderableCustomParamBucketSize);
+//        if(it != customParams.end()) {
+//            Ogre::Vector4 vec = it->second;
+//            setProperty( "BucketSize", (Ogre::uint32)vec.x);
+//        }
     }
 }
 
@@ -183,7 +194,7 @@ Ogre::uint32 HlmsParticle::fillBuffersFor(const Ogre::HlmsCache* cache, const Og
         // Particles data
         {
             Ogre::ReadOnlyBufferPacked* particleDataTexBuffer = particleSystemWorld->getParticleBufferAsReadOnly();
-            int totalSize = GpuParticleSystemWorld::ParticleDataStructSize * particleSystemWorld->getMaxParticles();
+            int totalSize = particleSystemWorld->getParticleDataStructFinalSize() * particleSystemWorld->getMaxParticles();
             *commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::VertexShader, ParticleDataTexSlot, particleDataTexBuffer, 0, totalSize);
             *commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::PixelShader, ParticleDataTexSlot, particleDataTexBuffer, 0, totalSize);
     //        rebindTexBuffer( commandBuffer );
@@ -201,7 +212,7 @@ Ogre::uint32 HlmsParticle::fillBuffersFor(const Ogre::HlmsCache* cache, const Og
         // Emitter core data
         {
             Ogre::ReadOnlyBufferPacked* emitterCoreBuffer = particleSystemWorld->getEmitterCoreBufferAsReadOnly();
-            int totalSize = GpuParticleSystemWorld::EmitterCoreDataStructSize * particleSystemWorld->getMaxEmitterCores();
+            int totalSize = particleSystemWorld->getEmitterCoreDataStructFinalSize() * particleSystemWorld->getMaxEmitterCores();
             *commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::VertexShader, EmitterCoreDataTexSlot, emitterCoreBuffer, 0, totalSize);
             *commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::PixelShader, EmitterCoreDataTexSlot, emitterCoreBuffer, 0, totalSize);
     //        rebindTexBuffer( commandBuffer );

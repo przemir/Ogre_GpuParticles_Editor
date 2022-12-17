@@ -78,10 +78,10 @@ void GpuParticleSystemJsonManager::loadGpuParticleSystems(const Ogre::String& fi
     if( d.HasParseError() )
     {
         OGRE_EXCEPT( Ogre::Exception::ERR_INVALIDPARAMS,
-                     "GpuParticleSystemJsonManager::loadGpuParticleSystems",
                      "Invalid JSON string in file " + filename + " at line " +
                      Ogre::StringConverter::toString( d.GetErrorOffset() ) + " Reason: " +
-                     rapidjson::GetParseError_En( d.GetParseError() ) );
+                     rapidjson::GetParseError_En( d.GetParseError() ),
+                     "GpuParticleSystemJsonManager::loadGpuParticleSystems");
     }
 
     //Load particle systems
@@ -103,9 +103,6 @@ void GpuParticleSystemJsonManager::loadGpuParticleSystems(const Ogre::String& fi
                     GpuParticleSystem *gpuParticleSystem = GpuParticleSystemResourceManager::getSingleton().
                                                            createParticleSystem( datablockName, datablockName, filename, resourceGroup );
                     loadGpuParticleSystem( itSystem->value, gpuParticleSystem );
-
-//                    hlms->_loadJson( itSystem->value, blocks, datablock, resourceGroup,
-//                                     mListener, additionalTextureExtension );
                 }
                 catch( Ogre::Exception &e )
                 {
@@ -351,6 +348,44 @@ void GpuParticleSystemJsonManager::loadGpuParticleEmitter(const rapidjson::Value
         readFloatTrack(itor->value, gpuParticleEmitter->mVelocityTrack);
         gpuParticleEmitter->mUseVelocityTrack = true;
     }
+
+    itor = json.FindMember("affectors");
+    if (itor != json.MemberEnd() && itor->value.IsObject())
+    {
+        GpuParticleSystemResourceManager& gpuParticleSystemResourceManager = GpuParticleSystemResourceManager::getSingleton();
+
+        const rapidjson::Value &affectors = itor->value;
+
+        rapidjson::Value::ConstMemberIterator itAffector = affectors.MemberBegin();
+        rapidjson::Value::ConstMemberIterator enAffector = affectors.MemberEnd();
+
+        while( itAffector != enAffector )
+        {
+            if( itAffector->value.IsObject() )
+            {
+                const char *affectorName = itAffector->name.GetString();
+                Ogre::String affectorNameStr = affectorName;
+                const GpuParticleAffector* registeredAffector = gpuParticleSystemResourceManager.getAffectorByProperty(affectorNameStr);
+
+                if(affectorNameStr.empty()) {
+                    OGRE_EXCEPT( Ogre::Exception::ERR_INVALIDPARAMS,
+                                 "Empty affector property name during loading.",
+                                 "GpuParticleSystemJsonManager::loadGpuParticleEmitter");
+                } else if(registeredAffector) {
+                    GpuParticleAffector* newAffector = registeredAffector->clone();
+                    newAffector->_loadJson(itAffector->value);
+                    gpuParticleEmitter->addAffector(newAffector);
+                }
+                else {
+                    OGRE_EXCEPT( Ogre::Exception::ERR_ITEM_NOT_FOUND,
+                                 "Not registered affector '" + affectorNameStr + "' inside GpuParticleSystemResourceManager.",
+                                 "GpuParticleSystemJsonManager::loadGpuParticleEmitter");
+                }
+            }
+
+            ++itAffector;
+        }
+    }
 }
 
 void GpuParticleSystemJsonManager::saveGpuParticleSystem(const GpuParticleSystem* gpuParticleSystem, Ogre::String& outString)
@@ -531,6 +566,26 @@ void GpuParticleSystemJsonManager::saveGpuParticleEmitter(const GpuParticleEmitt
         writeGpuEmitterVariable("velocityTrack", outString);
         writeFloatTrack(gpuParticleEmitter->mVelocityTrack, outString);
     }
+
+    outString += ",";
+    outString += "\n\t\t\t\t\t" + quote("affectors") + ":";
+    outString += "\n\t\t\t\t\t{";
+    const GpuParticleEmitter::AffectorMap& emitterAffectorMap = gpuParticleEmitter->getAffectors();
+    for (GpuParticleEmitter::AffectorMap::const_iterator it = emitterAffectorMap.begin();
+         it != emitterAffectorMap.end(); ++it) {
+
+        if(it != emitterAffectorMap.begin()) {
+            outString += ",";
+        }
+
+        const GpuParticleAffector* affector = it->second;
+
+        outString += "\n\t\t\t\t\t\t" + quote(affector->getAffectorProperty()) + ":";
+        outString += "\n\t\t\t\t\t\t{";
+        affector->_saveJson(outString);
+        outString += "\n\t\t\t\t\t\t}";
+    }
+    outString += "\n\t\t\t\t\t}";
 }
 
 void GpuParticleSystemJsonManager::readVector3Value(const rapidjson::Value& json, Ogre::Vector3& value)
@@ -690,6 +745,12 @@ void GpuParticleSystemJsonManager::toStrMinMax(float valueMin, float valueMax, O
 void GpuParticleSystemJsonManager::writeGpuEmitterVariable(const Ogre::String& var, Ogre::String& outString)
 {
     static const Ogre::String& prefix = "\n\t\t\t\t\t";
+    outString += prefix + quote(var) + ": ";
+}
+
+void GpuParticleSystemJsonManager::writeGpuAffectorVariable(const Ogre::String& var, Ogre::String& outString)
+{
+    static const Ogre::String& prefix = "\n\t\t\t\t\t\t\t";
     outString += prefix + quote(var) + ": ";
 }
 

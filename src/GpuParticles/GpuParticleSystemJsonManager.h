@@ -67,6 +67,10 @@ public:
 private:
     Ogre::StringVector mScriptPatterns;
 
+    /// Writes '\n\t\t"var": '
+    static void writeGpuEmitterVariable( const Ogre::String& var,  Ogre::String& outString);
+
+public:
     static void readVector3Value(const rapidjson::Value &json, Ogre::Vector3& value);
     static void readVector2Value(const rapidjson::Value &json, Ogre::Vector2& value);
     static void readQuaternionValue(const rapidjson::Value &json, Ogre::Quaternion& value);
@@ -84,8 +88,8 @@ private:
     static void toStr( const bool &value, Ogre::String &outString );
     static void toStrMinMax( float valueMin, float valueMax, Ogre::String &outString );
 
-    /// Writes '\n\t\t"var": '
-    static void writeGpuEmitterVariable( const Ogre::String& var,  Ogre::String& outString);
+    /// writeGpuAffectorVariable differs from writeGpuEmitterVariable with number indentations ('\t')
+    static void writeGpuAffectorVariable( const Ogre::String& var,  Ogre::String& outString);
     static Ogre::String quote( const Ogre::String& value );
 
     static void writeFloatTrack(const GpuParticleEmitter::FloatTrack& valueTrack, Ogre::String& outString);

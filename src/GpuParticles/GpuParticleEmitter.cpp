@@ -6,12 +6,123 @@
  */
 
 #include "GpuParticles/GpuParticleEmitter.h"
+#include <OgreStringConverter.h>
 
 const float GpuParticleEmitter::Epsilon = 0.001f;
 
 GpuParticleEmitter::GpuParticleEmitter()
 {
 
+}
+
+GpuParticleEmitter::~GpuParticleEmitter()
+{
+    for(AffectorMap::const_iterator it = mAffectors.begin(); it != mAffectors.end(); ++it) {
+        delete it->second;
+    }
+}
+
+GpuParticleEmitter::GpuParticleEmitter(const GpuParticleEmitter& other)
+    : mPos(other.mPos)
+    , mRot(other.mRot)
+    , mDatablockName(other.mDatablockName)
+    , mSpriteMode(other.mSpriteMode)
+    , mSpriteFlipbookCoords(other.mSpriteFlipbookCoords)
+    , mSpriteTimes(other.mSpriteTimes)
+    , mEmitterLifetime(other.mEmitterLifetime)
+    , mEmissionRate(other.mEmissionRate)
+    , mBurstParticles(other.mBurstParticles)
+    , mBurstMode(other.mBurstMode)
+    , mSpawnShape(other.mSpawnShape)
+    , mSpawnShapeDimensions(other.mSpawnShapeDimensions)
+    , mFaderMode(other.mFaderMode)
+    , mParticleFaderStartTime(other.mParticleFaderStartTime)
+    , mParticleFaderEndTime(other.mParticleFaderEndTime)
+    , mUniformSize(other.mUniformSize)
+    , mBillboardType(other.mBillboardType)
+    , mColourA(other.mColourA)
+    , mColourB(other.mColourB)
+    , mSizeMin(other.mSizeMin)
+    , mSizeMax(other.mSizeMax)
+    , mSizeYMin(other.mSizeYMin)
+    , mSizeYMax(other.mSizeYMax)
+    , mParticleLifetimeMin(other.mParticleLifetimeMin)
+    , mParticleLifetimeMax(other.mParticleLifetimeMax)
+    , mDirection(other.mDirection)
+    , mSpotAngleMin(other.mSpotAngleMin)
+    , mSpotAngleMax(other.mSpotAngleMax)
+    , mDirectionVelocityMin(other.mDirectionVelocityMin)
+    , mDirectionVelocityMax(other.mDirectionVelocityMax)
+    , mGravity(other.mGravity)
+    , mUseDepthCollision(other.mUseDepthCollision)
+    , mUseColourTrack(other.mUseColourTrack)
+    , mColourTrack(other.mColourTrack)
+    , mUseAlphaTrack(other.mUseAlphaTrack)
+    , mAlphaTrack(other.mAlphaTrack)
+    , mUseSizeTrack(other.mUseSizeTrack)
+    , mSizeTrack(other.mSizeTrack)
+    , mUseVelocityTrack(other.mUseVelocityTrack)
+    , mVelocityTrack(other.mVelocityTrack)
+{
+    for(AffectorMap::const_iterator it = other.mAffectors.begin(); it != other.mAffectors.end(); ++it) {
+        addAffector(it->second->clone());
+    }
+}
+
+GpuParticleEmitter& GpuParticleEmitter::operator=(const GpuParticleEmitter& other)
+{
+    mPos = other.mPos;
+    mRot = other.mRot;
+    mDatablockName = other.mDatablockName;
+    mSpriteMode = other.mSpriteMode;
+    mSpriteFlipbookCoords = other.mSpriteFlipbookCoords;
+    mSpriteTimes = other.mSpriteTimes;
+    mEmitterLifetime = other.mEmitterLifetime;
+    mEmissionRate = other.mEmissionRate;
+    mBurstParticles = other.mBurstParticles;
+    mBurstMode = other.mBurstMode;
+    mSpawnShape = other.mSpawnShape;
+    mSpawnShapeDimensions = other.mSpawnShapeDimensions;
+    mFaderMode = other.mFaderMode;
+    mParticleFaderStartTime = other.mParticleFaderStartTime;
+    mParticleFaderEndTime = other.mParticleFaderEndTime;
+    mUniformSize = other.mUniformSize;
+    mBillboardType = other.mBillboardType;
+    mColourA = other.mColourA;
+    mColourB = other.mColourB;
+    mSizeMin = other.mSizeMin;
+    mSizeMax = other.mSizeMax;
+    mSizeYMin = other.mSizeYMin;
+    mSizeYMax = other.mSizeYMax;
+    mParticleLifetimeMin = other.mParticleLifetimeMin;
+    mParticleLifetimeMax = other.mParticleLifetimeMax;
+    mDirection = other.mDirection;
+    mSpotAngleMin = other.mSpotAngleMin;
+    mSpotAngleMax = other.mSpotAngleMax;
+    mDirectionVelocityMin = other.mDirectionVelocityMin;
+    mDirectionVelocityMax = other.mDirectionVelocityMax;
+    mGravity = other.mGravity;
+    mUseDepthCollision = other.mUseDepthCollision;
+    mUseColourTrack = other.mUseColourTrack;
+    mColourTrack = other.mColourTrack;
+    mUseAlphaTrack = other.mUseAlphaTrack;
+    mAlphaTrack = other.mAlphaTrack;
+    mUseSizeTrack = other.mUseSizeTrack;
+    mSizeTrack = other.mSizeTrack;
+    mUseVelocityTrack = other.mUseVelocityTrack;
+    mVelocityTrack = other.mVelocityTrack;
+
+    // delete old affectors
+    for(AffectorMap::const_iterator it = mAffectors.begin(); it != mAffectors.end(); ++it) {
+        delete it->second;
+    }
+
+    // add new affectors
+    for(AffectorMap::const_iterator it = other.mAffectors.begin(); it != other.mAffectors.end(); ++it) {
+        addAffector(it->second->clone());
+    }
+
+    return *this;
 }
 
 Ogre::String GpuParticleEmitter::spriteModeToStr(GpuParticleEmitter::SpriteMode value)
@@ -146,4 +257,49 @@ bool GpuParticleEmitter::isImmediateBurst() const
 GpuParticleEmitter* GpuParticleEmitter::clone()
 {
     return OGRE_NEW GpuParticleEmitter(*this);
+}
+
+const GpuParticleAffector* GpuParticleEmitter::getAffectorNoThrow(AffectorType type) const
+{
+    AffectorMap::const_iterator it = mAffectors.find(type);
+    if(it != mAffectors.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+void GpuParticleEmitter::addAffector(GpuParticleAffector* affector)
+{
+    if(getAffectorNoThrow(affector->getType())) {
+        OGRE_EXCEPT( Ogre::Exception::ERR_DUPLICATE_ITEM,
+                     "emitter already contains affector of such type "
+                     + Ogre::StringConverter::toString((int)affector->getType())
+                     + ". Affector property '" + affector->getAffectorProperty() + "' collide with '"
+                     + mAffectors[affector->getType()]->getAffectorProperty() + "'.",
+                     "GpuParticleEmitter::addAffector" );
+        return;
+    }
+
+    mAffectors[affector->getType()] = affector;
+}
+
+void GpuParticleEmitter::removeAndDestroyAffector(AffectorType type)
+{
+    AffectorMap::const_iterator it = mAffectors.find(type);
+    if(it != mAffectors.end()) {
+        delete it->second;
+        mAffectors.erase(it);
+    }
+    else {
+        OGRE_EXCEPT( Ogre::Exception::ERR_ITEM_NOT_FOUND,
+                     "emitter does not have affector of such type "
+                     + Ogre::StringConverter::toString((int)type) + ".",
+                     "GpuParticleEmitter::addAffector" );
+        return;
+    }
+}
+
+const std::map<AffectorType, GpuParticleAffector*>& GpuParticleEmitter::getAffectors() const
+{
+    return mAffectors;
 }

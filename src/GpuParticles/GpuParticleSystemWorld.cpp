@@ -28,6 +28,8 @@
 
 #include <OgreLogManager.h>
 
+#include "GpuParticleAffectorCommon.h"
+
 //#include <Other/DebugVariable.h>
 
 #include <GpuParticles/Hlms/HlmsParticle.h>
@@ -142,7 +144,7 @@ const int GpuParticleSystemWorld::ParticleWorldDataStructSize =
 
 
 const int GpuParticleSystemWorld::RenderableTypeId = 5002; // Magic number to identify this renderable insinde HlmsParticle
-const int GpuParticleSystemWorld::RenderableCustomParamBucketSize = 5003; // Bucket size param (to not dynamic_cast renderable during HlmsParticle::calculateHashForPreCreate).
+//const int GpuParticleSystemWorld::RenderableCustomParamBucketSize = 5003; // Bucket size param (to not dynamic_cast renderable during HlmsParticle::calculateHashForPreCreate).
 
 
 GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
@@ -150,6 +152,7 @@ GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
                                                Ogre::SceneManager* manager,
                                                Ogre::uint8 renderQueueId,
                                                HlmsParticleListener* hlmsParticleListener,
+                                               const std::vector<GpuParticleAffector*>& affectors,
                                                bool useDepthTexture,
                                                CompositorWorkspace* compositorWorkspace,
                                                IdString depthTextureCompositorNode,
@@ -163,6 +166,8 @@ GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
     , mBucketSize(0)
     , mThreadsPerGroup(0)
     , mGroupsPerBucket(0)
+    , mParticleDataStructFinalSize(0)
+    , mEmitterCoreDataStructFinalSize(0)
     , mHlmsParticleListener(hlmsParticleListener)
     , mUseDepthTexture(useDepthTexture)
     , mInitLocationInUpdate(true)
@@ -183,6 +188,35 @@ GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
     mObjectData.mWorldAabb->setFromAabb( aabb, mObjectData.mIndex );
     mObjectData.mLocalRadius[mObjectData.mIndex] = std::numeric_limits<Real>::max();
     mObjectData.mWorldRadius[mObjectData.mIndex] = std::numeric_limits<Real>::max();
+
+    // Just to validate AffectorType is used not more than once.
+    std::map<AffectorType, const GpuParticleAffector*> registeredAffectorMap;
+
+    // GpuParticleSystemWorld takes ownerhip of afftector list.,
+    mRegisteredAffectorList.reserve(affectors.size());
+    for (size_t i = 0; i < affectors.size(); ++i) {
+        const GpuParticleAffector* affector = affectors[i];
+
+        if(affector->getAffectorProperty().empty()) {
+            OGRE_EXCEPT( Exception::ERR_INVALIDPARAMS,
+                         "GpuParticleAffector cannot have empty property name.",
+                         "GpuParticleSystemWorld::GpuParticleSystemWorld" );
+            OGRE_DELETE affector;
+        }
+        else if(registeredAffectorMap.find(affector->getType()) != registeredAffectorMap.end()) {
+            OGRE_EXCEPT( Exception::ERR_DUPLICATE_ITEM,
+                         "There exists already GpuParticleAffector with the same slot "
+                         + Ogre::StringConverter::toString((int)affector->getType())
+                         + ". Affector property '" + affector->getAffectorProperty() + "' collide with '"
+                         + registeredAffectorMap[affector->getType()]->getAffectorProperty() + "'.",
+                         "GpuParticleSystemWorld::GpuParticleSystemWorld" );
+            OGRE_DELETE affector;
+        }
+        else {
+            registeredAffectorMap[affector->getType()] = affector;
+            mRegisteredAffectorList.push_back(affector);
+        }
+    }
 
     if(mUseDepthTexture) {
         if(!mCompositorWorkspace) {
@@ -211,6 +245,10 @@ GpuParticleSystemWorld::~GpuParticleSystemWorld()
     }
     mParticleRenderables.clear();
     destroyBuffers();
+
+    for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
+        OGRE_DELETE mRegisteredAffectorList[i];
+    }
 }
 
 void GpuParticleSystemWorld::registerEmitterCore(const GpuParticleEmitter* particleEmitterCore)
@@ -702,6 +740,16 @@ GpuParticleSystemWorld::Info GpuParticleSystemWorld::getInfo() const
     return info;
 }
 
+const GpuParticleSystemWorld::AffectorList& GpuParticleSystemWorld::getRegisteredAffectorList() const
+{
+    return mRegisteredAffectorList;
+}
+
+Ogre::uint16 GpuParticleSystemWorld::getBucketSize() const
+{
+    return mBucketSize;
+}
+
 void GpuParticleSystemWorld::processTime(float elapsedTime)
 {
     if(mEmitterInstances.empty() || mRegisteredEmitterCores.empty()) {
@@ -824,9 +872,23 @@ void GpuParticleSystemWorld::initBuffers()
         }
     }
 
+    Ogre::uint32 allAffectorsParticleSize = 0;
+    Ogre::uint32 allAffectorsEmitterSize = 0;
+
+    for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
+
+        const GpuParticleAffector* affector = mRegisteredAffectorList[i];
+        allAffectorsParticleSize += affector->getAffectorParticleBufferSize();
+        allAffectorsEmitterSize += affector->getAffectorEmitterBufferSize();
+    }
+
+    mParticleDataStructFinalSize = ParticleDataStructSize+allAffectorsParticleSize;
+    mEmitterCoreDataStructFinalSize = EmitterCoreDataStructSize+allAffectorsEmitterSize;
+
+
     // Particle buffer
     {
-        mParticleBuffer = mVaoManager->createUavBuffer(mMaxParticles, ParticleDataStructSize, BB_FLAG_UAV|BB_FLAG_READONLY, 0, false);
+        mParticleBuffer = mVaoManager->createUavBuffer(mMaxParticles, mParticleDataStructFinalSize, BB_FLAG_UAV|BB_FLAG_READONLY, 0, false);
         mParticleBufferAsReadOnly = mParticleBuffer->getAsReadOnlyBufferView();
     }
 
@@ -840,10 +902,10 @@ void GpuParticleSystemWorld::initBuffers()
 
     // Emitter core buffer
     {
-        mEmitterCoreBuffer = mVaoManager->createUavBuffer(mMaxEmitterCores, EmitterCoreDataStructSize, BB_FLAG_UAV|BB_FLAG_READONLY, 0, false);
+        mEmitterCoreBuffer = mVaoManager->createUavBuffer(mMaxEmitterCores, mEmitterCoreDataStructFinalSize, BB_FLAG_UAV|BB_FLAG_READONLY, 0, false);
         mEmitterCoreBufferAsReadOnly = mEmitterCoreBuffer->getAsReadOnlyBufferView();
 
-        mCpuEmitterCoreBuffer = reinterpret_cast<float*>( OGRE_MALLOC_SIMD( mMaxEmitterCores * EmitterCoreDataStructSize, MEMCATEGORY_GENERAL ) );
+        mCpuEmitterCoreBuffer = reinterpret_cast<float*>( OGRE_MALLOC_SIMD( mMaxEmitterCores * mEmitterCoreDataStructFinalSize, MEMCATEGORY_GENERAL ) );
     }
 
     // Emitter instance buffer
@@ -991,6 +1053,16 @@ uint32 GpuParticleSystemWorld::estimateRequiredBucketCount(const GpuParticleEmit
     return buckets;
 }
 
+Ogre::uint32 GpuParticleSystemWorld::getParticleDataStructFinalSize() const
+{
+    return mParticleDataStructFinalSize;
+}
+
+Ogre::uint32 GpuParticleSystemWorld::getEmitterCoreDataStructFinalSize() const
+{
+    return mEmitterCoreDataStructFinalSize;
+}
+
 bool GpuParticleSystemWorld::requestBuckets(GpuParticleSystemWorld::EmitterInstance& emitterInstance)
 {
     uint32 buckets = estimateRequiredBucketCount(emitterInstance.mGpuParticleEmitter);
@@ -1122,11 +1194,11 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
         *buffer++ = emitterCore->mGravity.y;
         *buffer++ = emitterCore->mGravity.z;
 
-        uploadU32ToFloatArray(buffer, mUseDepthTexture && emitterCore->mUseDepthCollision ? 1u : 0u);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, mUseDepthTexture && emitterCore->mUseDepthCollision ? 1u : 0u);
 
         Ogre::uint32 spriteCount = std::min<Ogre::uint32>(emitterCore->mSpriteFlipbookCoords.size(), GpuParticleEmitter::MaxSprites);
-        uploadU32ToFloatArray(buffer, emitterCore->mSpriteMode == GpuParticleEmitter::SpriteMode::SetWithStart ? (Ogre::uint32)spriteCount : (Ogre::uint32)0);
-        uploadU32ToFloatArray(buffer, (Ogre::uint32) (emitterCore->mSpriteMode == GpuParticleEmitter::SpriteMode::ChangeWithTrack) );
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, emitterCore->mSpriteMode == GpuParticleEmitter::SpriteMode::SetWithStart ? (Ogre::uint32)spriteCount : (Ogre::uint32)0);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) (emitterCore->mSpriteMode == GpuParticleEmitter::SpriteMode::ChangeWithTrack) );
 
         float lastTimeValue = 0.0f;
         for (size_t i = 0; i < GpuParticleEmitter::MaxSprites; ++i) {
@@ -1166,21 +1238,21 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
             *buffer++ = texCoordSize.y;
         }
 
-        uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseColourTrack);
-        uploadVector3Track(buffer, emitterCore->mColourTrack);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseColourTrack);
+        GpuParticleAffectorCommon::uploadVector3Track(buffer, emitterCore->mColourTrack);
 
-        uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseAlphaTrack);
-        uploadFloatTrack(buffer, emitterCore->mAlphaTrack, 1.0f);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseAlphaTrack);
+        GpuParticleAffectorCommon::uploadFloatTrack(buffer, emitterCore->mAlphaTrack, 1.0f);
 
-        uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mFaderMode);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mFaderMode);
         *buffer++ = emitterCore->mParticleFaderStartTime;
         *buffer++ = emitterCore->mParticleFaderEndTime;
 
-        uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseSizeTrack);
-        uploadVector2Track(buffer, emitterCore->mSizeTrack);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseSizeTrack);
+        GpuParticleAffectorCommon::uploadVector2Track(buffer, emitterCore->mSizeTrack);
 
-        uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseVelocityTrack);
-        uploadFloatTrack(buffer, emitterCore->mVelocityTrack, 0.0f);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseVelocityTrack);
+        GpuParticleAffectorCommon::uploadFloatTrack(buffer, emitterCore->mVelocityTrack, 0.0f);
 
 
 
@@ -1193,13 +1265,25 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
         //        }
 
         // different size
-        uploadU32ToFloatArray(buffer, emitterCore->mUniformSize ? 1u : 0u);
-        uploadU32ToFloatArray(buffer, (Ogre::uint32)emitterCore->mBillboardType);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, emitterCore->mUniformSize ? 1u : 0u);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32)emitterCore->mBillboardType);
 
-        uploadU32ToFloatArray(buffer, (Ogre::uint32)emitterCore->mSpawnShape);
+        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32)emitterCore->mSpawnShape);
         *buffer++ = emitterCore->mSpawnShapeDimensions.x;
         *buffer++ = emitterCore->mSpawnShapeDimensions.y;
         *buffer++ = emitterCore->mSpawnShapeDimensions.z;
+
+        const GpuParticleEmitter::AffectorMap& affectorMap = emitterCore->getAffectors();
+        for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
+
+            const GpuParticleAffector* affector = mRegisteredAffectorList[i];
+            GpuParticleEmitter::AffectorMap::const_iterator itEmitterAffector = affectorMap.find(affector->getType());
+            if(itEmitterAffector != affectorMap.end()) {
+                affector = itEmitterAffector->second;
+            }
+
+            buffer = affector->prepareAffectorEmitterBuffer(buffer);
+        }
     }
 
     OGRE_ASSERT_LOW( (size_t)(buffer - bufferStart) * sizeof(float) <=
@@ -1216,65 +1300,6 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
     mEmitterCoreBufferDirty = false;
 
 #undef AS_U32PTR
-}
-
-void GpuParticleSystemWorld::uploadVector3Track(float*& buffer, const std::map<float, Vector3>& track)
-{
-    uploadTrack<Ogre::Vector3, 3, GpuParticleEmitter::MaxTrackValues>(buffer, track, Ogre::Vector3::ZERO);
-}
-
-void GpuParticleSystemWorld::uploadVector2Track(float*& buffer, const std::map<float, Vector2>& track)
-{
-    uploadTrack<Ogre::Vector2, 2, GpuParticleEmitter::MaxTrackValues>(buffer, track, Ogre::Vector2::ZERO);
-}
-
-void GpuParticleSystemWorld::uploadFloatTrack(float*& buffer, const std::map<float, float>& track, float defaultStartValue)
-{
-    // Track times
-    {
-        float lastTimeValue = 0.0f;
-        size_t i = 0;
-        for(std::map<float, float>::const_iterator it = track.begin();
-            it != track.end(); ++it, ++i) {
-            if(i >= GpuParticleEmitter::MaxTrackValues) {
-                break;
-            }
-
-            lastTimeValue = it->first;
-            *buffer++ = lastTimeValue;
-        }
-        for (; i < GpuParticleEmitter::MaxTrackValues; ++i) {
-            *buffer++ = lastTimeValue;
-        }
-    }
-
-    // Track values
-    {
-        float lastValue = defaultStartValue;
-        size_t i = 0;
-        for(std::map<float, float>::const_iterator it = track.begin();
-            it != track.end(); ++it, ++i) {
-            if(i >= GpuParticleEmitter::MaxTrackValues) {
-                break;
-            }
-
-            lastValue = it->second;
-            *buffer++ = lastValue;
-        }
-        for (; i < GpuParticleEmitter::MaxTrackValues; ++i) {
-            *buffer++ = lastValue;
-        }
-    }
-}
-
-void GpuParticleSystemWorld::uploadU32ToFloatArray(float*& buffer, uint32 value)
-{
-    //#define AS_U32PTR( x ) reinterpret_cast<uint32*RESTRICT_ALIAS>(x)
-    //#endif
-    //    *AS_U32PTR( buffer ) = emitterCore->mUniformSize ? 1u : 0u;      ++buffer;
-
-    *(reinterpret_cast<uint32*RESTRICT_ALIAS>(buffer)) = value;
-    ++buffer;
 }
 
 void GpuParticleSystemWorld::uploadToGpuEmitterInstances()
@@ -1789,6 +1814,11 @@ HlmsComputeJob* GpuParticleSystemWorld::getParticleCreateComputeJob()
         if(mInitLocationInUpdate) {
             job->setProperty(Ogre::IdString("initLocationInUpdate"), 1);
         }
+
+        for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
+            const GpuParticleAffector* affector = mRegisteredAffectorList[i];
+            job->setProperty(Ogre::IdString(affector->getAffectorProperty()), 1);
+        }
     }
     return job;
 }
@@ -1826,6 +1856,11 @@ HlmsComputeJob* GpuParticleSystemWorld::getParticleUpdateComputeJob()
 
         //        job = hlmsCompute->findComputeJobNoThrow( "HlmsParticle/Update" );
         //    job->setProperty();
+
+        for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
+            const GpuParticleAffector* affector = mRegisteredAffectorList[i];
+            job->setProperty(Ogre::IdString(affector->getAffectorProperty()), 1);
+        }
     }
     return job;
 }
@@ -1842,7 +1877,7 @@ GpuParticleSystemWorld::ParticleRenderable::ParticleRenderable(GpuParticleSystem
     //We use this magic value, to indicate this is a GpuParticleSystemWorld
     //and thus needs special shaders from HlmsParticle
     setCustomParameter( RenderableTypeId, Ogre::Vector4( 1.0f ) );
-    setCustomParameter( RenderableCustomParamBucketSize, Ogre::Vector4 ((Ogre::Real)bucketSize) );
+//    setCustomParameter( RenderableCustomParamBucketSize, Ogre::Vector4 ((Ogre::Real)bucketSize) );
 
     // init vao
     {

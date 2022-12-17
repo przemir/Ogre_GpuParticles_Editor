@@ -153,6 +153,16 @@ void OgreRenderer::createScene()
         HlmsParticle* hlmsParticle = static_cast<HlmsParticle*>( hlmsManager->getHlms(HlmsParticle::ParticleHlmsType) );
         HlmsParticleListener* hlmsParticleListener = hlmsParticle->getParticleListener();
 
+        std::vector<GpuParticleAffector*> affectors;
+
+        GpuParticleSystemResourceManager& gpuParticleSystemResourceManager = GpuParticleSystemResourceManager::getSingleton();
+        const GpuParticleSystemResourceManager::AffectorByTypeMap& registeredAffectors = gpuParticleSystemResourceManager.getAffectorByTypeMap();
+        for(GpuParticleSystemResourceManager::AffectorByTypeMap::const_iterator it = registeredAffectors.begin();
+            it != registeredAffectors.end(); ++it) {
+
+            affectors.push_back(it->second->clone());
+        }
+
         bool useDepthTexture = true;
 
         // Compositor is needed only in case of useDepthTexture == true.
@@ -162,7 +172,8 @@ void OgreRenderer::createScene()
         data.mGpuParticleSystemWorld = OGRE_NEW GpuParticleSystemWorld(
                     Ogre::Id::generateNewId<Ogre::MovableObject>(),
                     &mSceneMgr->_getEntityMemoryManager( Ogre::SCENE_DYNAMIC ),
-                    mSceneMgr, 15, hlmsParticleListener, useDepthTexture, data.mOgreQtAppSystem->getCompositorWorkspace(),
+                    mSceneMgr, 15, hlmsParticleListener, affectors,
+                    useDepthTexture, data.mOgreQtAppSystem->getCompositorWorkspace(),
                     depthTextureCompositorNode, depthTextureId);
 
         data.mGpuParticleSystemWorld->init(65536, 128, 1024, 64, 64);

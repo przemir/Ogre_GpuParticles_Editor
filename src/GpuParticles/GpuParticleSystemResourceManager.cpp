@@ -8,13 +8,31 @@
 #include <GpuParticles/GpuParticleSystemResourceManager.h>
 #include <OgreException.h>
 #include <OgreId.h>
+#include <OgreStringConverter.h>
 #include <GpuParticles/GpuParticleSystem.h>
+#include <GpuParticles/Affectors/GpuParticleSetColourTrackAffector.h>
 
 template<> GpuParticleSystemResourceManager *Ogre::Singleton<GpuParticleSystemResourceManager>::msSingleton = 0;
 
 GpuParticleSystemResourceManager::GpuParticleSystemResourceManager()
 {
 
+}
+
+GpuParticleSystemResourceManager::~GpuParticleSystemResourceManager()
+{
+    // destroy particle systems
+    GpuParticleSystemMap::const_iterator it = mGpuParticleSystemMap.begin();
+    for(; it != mGpuParticleSystemMap.end(); ++it) {
+        OGRE_DELETE it->second.gpuParticleSystem;
+    }
+
+    // destroy affectors
+    for(AffectorByTypeMap::const_iterator it = mAffectorByTypeMap.begin(); it != mAffectorByTypeMap.end(); ++it) {
+        delete it->second;
+    }
+    mAffectorByTypeMap.clear();
+    mAffectorByIdStringMap.clear();
 }
 
 GpuParticleSystem* GpuParticleSystemResourceManager::createParticleSystem(Ogre::IdString name,
@@ -32,7 +50,8 @@ GpuParticleSystem* GpuParticleSystemResourceManager::createParticleSystem(Ogre::
     if( mGpuParticleSystemMap.find( name ) != mGpuParticleSystemMap.end() )
     {
         OGRE_EXCEPT( Ogre::Exception::ERR_DUPLICATE_ITEM, "A particle system with name '" +
-                     name.getFriendlyText() + "' already exists.", "GpuParticleSystemJsonManager::createParticleSystem" );
+                     name.getFriendlyText() + "' already exists.",
+                     "GpuParticleSystemResourceManager::createParticleSystem" );
     }
 
     GpuParticleSystem* retVal =
@@ -74,7 +93,8 @@ void GpuParticleSystemResourceManager::destroyParticleSystem(Ogre::IdString gpuP
     GpuParticleSystemMap::const_iterator it = mGpuParticleSystemMap.find(gpuParticleSystemName);
     if(it == mGpuParticleSystemMap.end()) {
         OGRE_EXCEPT( Ogre::Exception::ERR_ITEM_NOT_FOUND, "A particle system with name '" +
-                     gpuParticleSystemName.getFriendlyText() + "' was not found in mGpuParticleSystemMap.", "GpuParticleSystemJsonManager::destroyParticleSystem" );
+                     gpuParticleSystemName.getFriendlyText() + "' was not found in mGpuParticleSystemMap.",
+                     "GpuParticleSystemResourceManager::destroyParticleSystem" );
         return;
     }
 
@@ -95,5 +115,50 @@ void GpuParticleSystemResourceManager::destroyParticleSystem(const GpuParticleSy
         }
     }
 
-    OGRE_EXCEPT( Ogre::Exception::ERR_ITEM_NOT_FOUND, "A particle system to delete was not found in mGpuParticleSystemMap.", "GpuParticleSystemJsonManager::destroyParticleSystem" );
+    OGRE_EXCEPT( Ogre::Exception::ERR_ITEM_NOT_FOUND, "A particle system to delete was not found in mGpuParticleSystemMap.",
+                 "GpuParticleSystemResourceManager::destroyParticleSystem" );
+}
+
+void GpuParticleSystemResourceManager::registerCommonAffectors()
+{
+    registerAffector(new GpuParticleSetColourTrackAffector());
+}
+
+void GpuParticleSystemResourceManager::registerAffector(GpuParticleAffector* affector)
+{
+    if(affector->getAffectorProperty().empty()) {
+        OGRE_EXCEPT( Ogre::Exception::ERR_INVALIDPARAMS, "A particle affector cannot have empty affector property name",
+                     "GpuParticleSystemResourceManager::registerAffector" );
+        return;
+    }
+
+    AffectorByIdStringMap::iterator itByIdString = mAffectorByIdStringMap.find(affector->getAffectorProperty());
+    if(itByIdString != mAffectorByIdStringMap.end()) {
+
+        OGRE_EXCEPT( Ogre::Exception::ERR_DUPLICATE_ITEM, "A particle affector with property name '" +
+                     affector->getAffectorProperty() + "' already exists.",
+                     "GpuParticleSystemResourceManager::registerAffector" );
+        return;
+    }
+
+    AffectorByTypeMap::iterator itByType = mAffectorByTypeMap.find(affector->getType());
+    if(itByType != mAffectorByTypeMap.end()) {
+
+        OGRE_EXCEPT( Ogre::Exception::ERR_DUPLICATE_ITEM, "A particle affector with type " +
+                     Ogre::StringConverter::toString((int)affector->getType()) + " already exists.",
+                     "GpuParticleSystemResourceManager::registerAffector" );
+        return;
+    }
+
+    mAffectorByTypeMap[affector->getType()] = affector;
+    mAffectorByIdStringMap[affector->getAffectorProperty()] = affector;
+}
+
+const GpuParticleAffector* GpuParticleSystemResourceManager::getAffectorByProperty(Ogre::IdString affectorProperty)
+{
+    AffectorByIdStringMap::const_iterator it = mAffectorByIdStringMap.find(affectorProperty);
+    if(it != mAffectorByIdStringMap.end()) {
+        return it->second;
+    }
+    return nullptr;
 }

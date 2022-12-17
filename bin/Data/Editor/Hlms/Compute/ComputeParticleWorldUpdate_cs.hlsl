@@ -169,6 +169,12 @@ void main
         particle.colour.xyz = getFromTrack3(particle.lifetime, emitterCore.colourTrackTimes, emitterCore.colourTrackValues);
     }
     
+@property(affector_set_colour_track)
+    if(emitterCore.affectorSetColourTrackEnabled) {
+        particle.colour.xyz = getFromTrack3(particle.lifetime, emitterCore.affectorSetColourTrackTrackTimes, emitterCore.affectorSetColourTrackTrackValues);
+    }
+@end
+    
     if(emitterCore.useAlphaTrack) {
         particle.colour.w = getFromTrack1(particle.lifetime, emitterCore.alphaTrackTimes, emitterCore.alphaTrackValues);
     }

@@ -164,6 +164,12 @@ struct EmitterCoreData {
     uint billboardType;
     uint spawnShape;
     float3 spawnShapeDimensions;
+    
+    @property(affector_set_colour_track)
+    uint affectorSetColourTrackEnabled;
+    float affectorSetColourTrackTrackTimes[8];
+    float3 affectorSetColourTrackTrackValues[8];
+    @end
 };
 static const uint BillboardType_Point = 0;
 static const uint BillboardType_OrientedSelf = 2;

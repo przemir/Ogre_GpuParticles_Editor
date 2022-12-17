@@ -14,6 +14,8 @@
 class QListWidget;
 class QCheckBox;
 class GpuParticleSystem;
+class GpuParticleEmitter;
+class GpuParticleAffector;
 class ParticleEditorData;
 
 class GpuParticleSystemTreeWidget : public QWidget
@@ -25,24 +27,35 @@ public:
     void setEditedObject(GpuParticleSystem* core);
     void particleSystemToGui();
     int getCurrentEmitterCoreIndex() const;
+    int getCurrentAffectorIndex() const;
+    const GpuParticleAffector* getCurrentAffector();
 
     GpuParticleSystem* getGpuParticleSystem() const;
     bool showOnlySelectedEmitters() const;
+    void createAffectorActions();
 
 private:
     ParticleEditorData& data;
     GpuParticleSystem* mGpuParticleSystem = nullptr;
 
-    QListWidget* mParticleEmittersList;
+    QTreeWidget* mParticleEmittersTree;
     QCheckBox* mShowOnlySelectedEmitters;
+    QMenu* mParticleEmittersTreeContextMenu;
+    QMenu* mCreateAffectorMenu;
+
+private:
+    void setEmitterNames();
+    void fillEmitterAffectorsToGui(QTreeWidgetItem* item, const GpuParticleEmitter* emitterCore);
 
 private slots:
     void createEmitterAction();
     void copyEmitterAction();
     void pasteToNewEmitterAction();
-    void removeEmitterAction();
+    void removeAction();
     void moveEmitterUpAction();
     void moveEmitterDownAction();
+    void onContextMenuRequested(const QPoint& pos);
+    void createAffectorAction(QAction* action);
 
 public slots:
     void updateEmitterInvalidIcons();

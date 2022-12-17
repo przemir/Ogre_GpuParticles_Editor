@@ -10,11 +10,14 @@
 #include <DoubleValueController.h>
 #include <QMainWindow>
 #include "QTOgreWindow.h"
+#include <GpuParticles/GpuParticleAffectorCommon.h>
 
 class ParticleEditorData;
 class ParticleProject;
 
 class ColourEditField;
+class ResizableStackedWidget;
+class GpuParticleAffectorWidget;
 
 class QStackedWidget;
 class QActionGroup;
@@ -43,6 +46,10 @@ private:
     QActionGroup* mResourcesTabActionGroup = nullptr;
     QDockWidget* mParticleSystemDock = nullptr;
     QStackedWidget* mSelectedObjectStackedWidget = nullptr;
+    ResizableStackedWidget* mEmitterStackedWidget = nullptr;
+//    QStackedWidget* mSelectedAffectorStackedWidget = nullptr;
+    typedef std::map<AffectorType, GpuParticleAffectorWidget*> AffectorWidgetMap;
+    AffectorWidgetMap mAffectorWidgetMap;
 
     ParticleProject* mParticleProject = nullptr;
 
@@ -50,6 +57,10 @@ private:
     DoubleValueController mSpeedController;
 
 private:
+
+    void createAffectorWidgets();
+    void createAffectorWidget(AffectorType type, GpuParticleAffectorWidget* widget);
+
     /// Removes characters like / or \ from string, modifies input.
     /// It is only for file name, not for full path.
     static void cleanFileNameToSave(QString& fileName);

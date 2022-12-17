@@ -50,7 +50,8 @@ void OgreQtAppParticleEditorSystem::deinitialize()
 
 void OgreQtAppParticleEditorSystem::setupResources()
 {
-    new GpuParticleSystemResourceManager();
+    GpuParticleSystemResourceManager* gpuParticleSystemResourceManager = new GpuParticleSystemResourceManager();
+    gpuParticleSystemResourceManager->registerCommonAffectors();
     new GpuParticleSystemJsonManager();
 
     OgreSDLSystem::setupResources();

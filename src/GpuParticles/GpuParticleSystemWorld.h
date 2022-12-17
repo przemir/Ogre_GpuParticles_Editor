@@ -147,6 +147,9 @@ public:
 
 public:
 
+    /// @param affectors - affectors handled by this GpuParticleSystemWorld.
+    ///                    Also contains default values in case emitterCore have not have
+    ///                    this affector. Takes ownership.
     /// @param useDepthTexture - depth texture is used for particle collisions.
     /// @param compositorWorkspace - only needed when useDepthTexture == true
     /// @param depthTextureCompositorNode - only needed when useDepthTexture == true
@@ -156,6 +159,7 @@ public:
                            Ogre::SceneManager* manager,
                            Ogre::uint8 renderQueueId,
                            HlmsParticleListener* hlmsParticleListener,
+                           const std::vector<GpuParticleAffector*>& affectors,
                            bool useDepthTexture,
                            Ogre::CompositorWorkspace* compositorWorkspace = nullptr,
                            Ogre::IdString depthTextureCompositorNode = Ogre::IdString(),
@@ -239,6 +243,8 @@ public:
     inline int getAvailableBuckets() const { return mAvailableBucketsStack.size(); }
     bool canAllocateBuckets(int buckets) const { return buckets <= (int)mAvailableBucketsStack.size(); }
 
+    typedef std::vector<const GpuParticleAffector*> AffectorList;
+
 private:
     Ogre::IndexBufferPacked* mIndexBuffer = nullptr;
 
@@ -278,6 +284,8 @@ private:
     typedef std::map<const GpuParticleEmitter*, Ogre::uint16> GpuParticleEmitterMap;
     GpuParticleEmitterMap mRegisteredEmitterCoresSet;
 
+    std::vector<const GpuParticleAffector*> mRegisteredAffectorList;
+
     /// Bucket indexes stack.
     std::vector<Ogre::uint32> mAvailableBucketsStack;
 
@@ -308,14 +316,23 @@ public:
     virtual const Ogre::String& getMovableType(void) const;
 
     static const int RenderableTypeId;
-    static const int RenderableCustomParamBucketSize;
-    static const int ParticleDataStructSize;
+//    static const int RenderableCustomParamBucketSize;
     static const int EntryBucketDataStructSize;
     static const int EmitterInstanceDataStructSize;
-    static const int EmitterCoreDataStructSize;
     static const int ParticleWorldDataStructSize;
 
     Ogre::uint32 estimateRequiredBucketCount(const GpuParticleEmitter* emitterCore) const;
+
+    Ogre::uint32 getParticleDataStructFinalSize() const;
+    Ogre::uint32 getEmitterCoreDataStructFinalSize() const;
+
+    const AffectorList& getRegisteredAffectorList() const;
+
+    Ogre::uint16 getBucketSize() const;
+
+private:
+    static const int ParticleDataStructSize;
+    static const int EmitterCoreDataStructSize;
 
 private:
     Ogre::VaoManager* mVaoManager;
@@ -326,6 +343,9 @@ private:
     Ogre::uint16 mBucketSize;
     Ogre::uint16 mThreadsPerGroup;
     Ogre::uint16 mGroupsPerBucket;
+
+    Ogre::uint32 mParticleDataStructFinalSize;
+    Ogre::uint32 mEmitterCoreDataStructFinalSize;
 
     Ogre::HlmsComputeJob* mCreateParticlesJob = nullptr;
     Ogre::HlmsComputeJob* mUpdateParticlesJob = nullptr;
@@ -344,12 +364,7 @@ private:
     void freeUnusedBuckets(EmitterInstance& emitterInstance);
     Ogre::uint32 getBucketsForNumber(Ogre::uint32 number) const;
     void uploadToGpuEmitterCores();
-    template <class T, int Elements, int Size>
-    void uploadTrack(float *& RESTRICT_ALIAS buffer, const std::map<float, T>& track, const T& defaultStartValue);
-    void uploadVector3Track(float *& RESTRICT_ALIAS buffer, const std::map<float, Ogre::Vector3>& track);
-    void uploadVector2Track(float *& RESTRICT_ALIAS buffer, const std::map<float, Ogre::Vector2>& track);
-    void uploadFloatTrack(float *& RESTRICT_ALIAS buffer, const std::map<float, float>& track, float defaultStartValue);
-    void uploadU32ToFloatArray(float *& RESTRICT_ALIAS buffer, Ogre::uint32 value);
+
     void uploadToGpuEmitterInstances();
     void uploadEntryBucketRow(Ogre::uint32 *& RESTRICT_ALIAS entryBucketBuffer, const BucketGroupData& bucketGroup);
     void uploadToGpuParticleWorld(float elapsedTime);
@@ -375,52 +390,5 @@ private:
     Ogre::HlmsComputeJob* getParticleCreateComputeJob();
     Ogre::HlmsComputeJob* getParticleUpdateComputeJob();
 };
-
-template<class T, int Elements, int Size>
-void GpuParticleSystemWorld::uploadTrack(float*& buffer, const std::map<float, T>& track, const T& defaultStartValue)
-{
-    // Colour track times
-    {
-        float lastTimeValue = 0.0f;
-        size_t i = 0;
-        for(std::map<float, T>::const_iterator it = track.begin();
-            it != track.end(); ++it, ++i) {
-            if(i >= GpuParticleEmitter::MaxTrackValues) {
-                break;
-            }
-
-            lastTimeValue = it->first;
-            *buffer++ = lastTimeValue;
-        }
-        for (; i < GpuParticleEmitter::MaxTrackValues; ++i) {
-            // add second to each next value to avoid 0-length
-            lastTimeValue += 1.0f;
-            *buffer++ = lastTimeValue;
-        }
-    }
-
-    // Colour track values
-    {
-        T lastValue = defaultStartValue;
-        size_t i = 0;
-        for(std::map<float, T>::const_iterator it = track.begin();
-            it != track.end(); ++it, ++i) {
-            if(i >= GpuParticleEmitter::MaxTrackValues) {
-                break;
-            }
-
-            lastValue = it->second;
-            for (int k = 0; k < Elements; ++k) {
-                *buffer++ = lastValue[k];
-            }
-        }
-        for (; i < GpuParticleEmitter::MaxTrackValues; ++i) {
-            for (int k = 0; k < Elements; ++k) {
-                *buffer++ = lastValue[k];
-            }
-        }
-    }
-}
-
 
 #endif

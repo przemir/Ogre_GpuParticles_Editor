@@ -12,6 +12,7 @@
 #include <OgreHlmsUnlit.h>
 #include <OgreHlmsUnlitDatablock.h>
 #include <OgreFileSystem.h>
+#include <ResizableStackedWidget.h>
 
 #include <QBoxLayout>
 #include <QCloseEvent>
@@ -49,6 +50,8 @@
 #include <GpuParticles/Hlms/HlmsParticle.h>
 #include <GpuParticles/Hlms/HlmsParticleDatablock.h>
 #include <Widgets/ColourEditField.h>
+
+#include <Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.h>
 
 namespace {
     class ScrollAreaWithSizeHint: public QScrollArea {
@@ -318,14 +321,29 @@ MainWindow::MainWindow(QWidget *parent)
 
             {
                 QScrollArea* scrollArea = new ScrollAreaWithSizeHint();
+                scrollArea->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
                 scrollArea->setWidgetResizable(true);
+
+                mEmitterStackedWidget = new ResizableStackedWidget();
+                mEmitterStackedWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+                QWidget* widget = new QWidget();
+                widget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+                mEmitterStackedWidget->addWidget(widget);
+
                 mParticleEditorData->mWidgets.mGpuParticleEmitterWidget = new GpuParticleEmitterWidget(*mParticleEditorData);
                 connect(mParticleEditorData->mWidgets.mGpuParticleEmitterWidget, SIGNAL(emitterCoreModified()), mRenderer, SLOT(updateEmitterCores()));
-                scrollArea->setWidget(mParticleEditorData->mWidgets.mGpuParticleEmitterWidget);
+                mEmitterStackedWidget->addWidget(mParticleEditorData->mWidgets.mGpuParticleEmitterWidget);
+//                scrollArea->setWidget(mParticleEditorData->mWidgets.mGpuParticleEmitterWidget);
+
+                createAffectorWidgets();
+
+                scrollArea->setWidget(mEmitterStackedWidget);
                 splitter->addWidget(scrollArea);
                 splitter->setStretchFactor(1, 3);
             }
 
+            splitter->setSizes({5000, 15000});
             mSelectedObjectStackedWidget->addWidget(splitter);
         }
 
@@ -436,6 +454,20 @@ MainWindow::~MainWindow()
     mRenderer->destroyGpuParticleSystemWorld();
 }
 
+void MainWindow::createAffectorWidgets()
+{
+    createAffectorWidget(AFFECTOR_SET_COLOR_TRACK, new GpuParticleSetColourTrackAffectorWidget());
+}
+
+void MainWindow::createAffectorWidget(AffectorType type, GpuParticleAffectorWidget* widget)
+{
+    Q_ASSERT(mAffectorWidgetMap.find(type) == mAffectorWidgetMap.end());
+
+    mAffectorWidgetMap[type] = widget;
+    mEmitterStackedWidget->addWidget(widget);
+    connect(widget, SIGNAL(affectorModified()), mRenderer, SLOT(updateEmitterCores()));
+}
+
 void MainWindow::cleanFileNameToSave(QString& fileName)
 {
     QString pattern = "[" + QRegExp::escape("/\\.,") + "]";
@@ -447,6 +479,8 @@ void MainWindow::onSceneInitialized()
     mParticleEditorData->mParticleEditorFunctions->updateParticleSystemsWidgets();
     mParticleEditorData->mParticleEditorFunctions->refreshParticleDatablocks();
     mParticleEditorData->mParticleEditorFunctions->updateParticleDatablocksWidgets();
+
+    mParticleEditorData->mWidgets.mGpuParticleSystemTreeWidget->createAffectorActions();
 
     mParticleEditorData->mWidgets.mGpuParticleDatablockWidget->refreshLoadFromResourcesActions();
 }
@@ -484,6 +518,27 @@ void MainWindow::emitterChanged()
     int emitterIndex = mParticleEditorData->mWidgets.mGpuParticleSystemTreeWidget->getCurrentEmitterCoreIndex();
     GpuParticleSystem* core = mParticleEditorData->mWidgets.mGpuParticleSystemTreeWidget->getGpuParticleSystem();
     mParticleEditorData->mWidgets.mGpuParticleEmitterWidget->setEditedObject(core, emitterIndex);
+
+    const GpuParticleAffector* affectorConst = mParticleEditorData->mWidgets.mGpuParticleSystemTreeWidget->getCurrentAffector();
+    GpuParticleAffector* affector = const_cast<GpuParticleAffector*>(affectorConst);
+
+    int currentStackedIndex = -1;
+    if(!affector) {
+        // top level
+        currentStackedIndex = 1;
+    }
+    else {
+        AffectorWidgetMap::iterator it = mAffectorWidgetMap.find(affector->getType());
+        if(it != mAffectorWidgetMap.end()) {
+            GpuParticleAffectorWidget* affectorWidget = it->second;
+            currentStackedIndex = mEmitterStackedWidget->indexOf(affectorWidget);
+            affectorWidget->setEditedObject(affector);
+        }
+    }
+    if(currentStackedIndex < 0) {
+        currentStackedIndex = 0;
+    }
+    mEmitterStackedWidget->setCurrentIndex(currentStackedIndex);
 
     if(mParticleEditorData->mWidgets.mGpuParticleSystemTreeWidget->showOnlySelectedEmitters()) {
         mRenderer->restartParticleSystem();

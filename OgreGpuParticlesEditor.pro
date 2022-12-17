@@ -92,6 +92,11 @@ DEPENDPATH  += src/ \
 VPATH = src/
 
 SOURCES += main.cpp \
+    src/Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.cpp \
+    src/Editors/GpuParticleAffectorWidget.cpp \
+    src/GpuParticles/Affectors/GpuParticleSetColourTrackAffector.cpp \
+    src/GpuParticles/GpuParticleAffector.cpp \
+    src/GpuParticles/GpuParticleAffectorCommon.cpp \
     src/MainWindow.cpp \
     src/OgreQtAppParticleEditorSystem.cpp \
     src/OgreRenderer.cpp \
@@ -119,6 +124,7 @@ SOURCES += main.cpp \
     src/Widgets/Point2dWidget.cpp \
     src/Widgets/Point3dWidget.cpp \
     src/Widgets/RangeWidget.cpp \
+    src/Widgets/ResizableStackedWidget.cpp \
     src/Widgets/SpriteTrackTableWidget.cpp \
     src/Widgets/TrackTableModel.cpp \
     src/Widgets/TrackTableModelBase.cpp \
@@ -141,6 +147,11 @@ SOURCES += main.cpp \
     src/Editors/UnlitDatablockWidget.cpp
 
 HEADERS  += \
+    src/Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.h \
+    src/Editors/GpuParticleAffectorWidget.h \
+    src/GpuParticles/Affectors/GpuParticleSetColourTrackAffector.h \
+    src/GpuParticles/GpuParticleAffector.h \
+    src/GpuParticles/GpuParticleAffectorCommon.h \
     src/MainWindow.h \
     src/OgreQtAppParticleEditorSystem.h \
     src/OgreRenderer.h \
@@ -168,6 +179,7 @@ HEADERS  += \
     src/Widgets/Point2dWidget.h \
     src/Widgets/Point3dWidget.h \
     src/Widgets/RangeWidget.h \
+    src/Widgets/ResizableStackedWidget.h \
     src/Widgets/SpriteTrackTableWidget.h \
     src/Widgets/TrackTableModel.h \
     src/Widgets/TrackTableModelBase.h \
