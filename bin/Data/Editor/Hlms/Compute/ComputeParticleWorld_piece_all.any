@@ -113,6 +113,8 @@ struct Particle {
     float maxLifetime;
     float3 dir;
     float dirVelocity;
+    
+    @insertpiece( custom_Particle_variables )
 };
 
 struct BucketGroup
@@ -177,6 +179,8 @@ struct EmitterCoreData {
     @property(affector_depth_collision)
     uint affectorDepthCollisionEnabled;
     @end
+    
+    @insertpiece( custom_EmitterCoreData_variables )
 };
 static const uint BillboardType_Point = 0;
 static const uint BillboardType_OrientedSelf = 2;

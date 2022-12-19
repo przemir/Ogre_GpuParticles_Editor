@@ -157,4 +157,5 @@ void main
         particle.spriteNumber = random.generate() * (float)emitterCore.spriteRange;
     }
     
+    @insertpiece( custom_ComputeParticleWorldCreate_end )
 }

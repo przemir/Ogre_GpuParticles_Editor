@@ -93,6 +93,8 @@ void main
         
         float3x3 emitterRotMatrix = (float3x3)emitterInstance.emitterLocation;
         particle.dir = mul(particle.dir, emitterRotMatrix);
+        
+        @insertpiece( custom_ComputeParticleWorldUpdate_initLocationInUpdate )
     }
 @end
 
@@ -190,4 +192,6 @@ void main
         particle.dirVelocity = getFromTrack1(particle.lifetime, emitterCore.affectorSetVelocityTrackTimes, emitterCore.affectorSetVelocityTrackValues);
     }
 @end
+
+    @insertpiece( custom_ComputeParticleWorldUpdate_end )
 }
