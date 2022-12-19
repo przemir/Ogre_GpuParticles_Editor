@@ -30,6 +30,7 @@ class GpuParticleSystem;
 class ParticleEditorAssets;
 class OgreRenderer;
 class GpuParticleEmitter;
+class GpuParticleAffector;
 class MainWindow;
 class HlmsParticleDatablock;
 class GpuParticleDatablocksListWidget;
@@ -85,6 +86,7 @@ public:
     GpuParticleSystem* mChoosenGpuParticleSystem = nullptr;
     GpuParticleSystem* mStartedGpuParticleSystem = nullptr;
     GpuParticleEmitter* mGpuParticleEmitterClipboard; // owned, created and destroyed by ParticleEditorData.
+    GpuParticleAffector* mGpuParticleAffectorClipboard = nullptr; // owned
     HlmsParticleDatablock* mChoosenGpuParticleDatablock = nullptr;
     Ogre::uint64 mParticleInstanceId = 0;
     Ogre::Node* mParticleInstanceNode = nullptr;
@@ -109,6 +111,8 @@ public:
     QString currentParticleDatablockName() const;
     void copyFromGpuParticleEmitter(const GpuParticleEmitter* emitter);
     void pasteToGpuParticleEmitter(GpuParticleEmitter* emitter) const;
+    void copyFromGpuParticleAffector(const GpuParticleAffector* affector);
+    GpuParticleAffector* pasteToGpuParticleAffector() const;
     Ogre::Root* getRoot() const;
     Ogre::RenderSystem* getRenderSystem() const;
 };

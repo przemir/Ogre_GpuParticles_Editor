@@ -345,10 +345,10 @@ MainWindow::MainWindow(QWidget *parent)
 
                 scrollArea->setWidget(mEmitterStackedWidget);
                 splitter->addWidget(scrollArea);
-                splitter->setStretchFactor(1, 3);
+                splitter->setStretchFactor(1, 2);
             }
 
-            splitter->setSizes({5000, 15000});
+            splitter->setSizes({5000, 10000});
             mSelectedObjectStackedWidget->addWidget(splitter);
         }
 
@@ -503,6 +503,7 @@ void MainWindow::particleSystemChanged(const QString& name)
     mParticleEditorData->mWidgets.mGpuParticleSystemNameEdit->setText(name);
     mParticleEditorData->mWidgets.mGpuParticleSystemTreeWidget->setEditedObject(coreNonConst);
     mParticleEditorData->mWidgets.mGpuParticleEmitterWidget->setEditedObject(nullptr, -1);
+    mEmitterStackedWidget->setCurrentIndex(0);
 
     mRenderer->chooseParticleSystem();
 }

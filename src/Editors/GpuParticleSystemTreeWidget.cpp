@@ -38,12 +38,16 @@ GpuParticleSystemTreeWidget::GpuParticleSystemTreeWidget(ParticleEditorData& _da
         mParticleEmittersTreeContextMenu->addAction(createAction);
 
         QAction* copyAction = new QAction(tr("Copy"));
-        connect(copyAction, SIGNAL(triggered(bool)), this, SLOT(copyEmitterAction()));
+        connect(copyAction, SIGNAL(triggered(bool)), this, SLOT(copyAction()));
         mParticleEmittersTreeContextMenu->addAction(copyAction);
 
         QAction* pasteToNewAction = new QAction(tr("Paste to new emitter"));
         connect(pasteToNewAction, SIGNAL(triggered(bool)), this, SLOT(pasteToNewEmitterAction()));
         mParticleEmittersTreeContextMenu->addAction(pasteToNewAction);
+
+        QAction* pasteAffectorAction = new QAction(tr("Paste affector"));
+        connect(pasteAffectorAction, SIGNAL(triggered(bool)), this, SLOT(pasteAffectorAction()));
+        mParticleEmittersTreeContextMenu->addAction(pasteAffectorAction);
 
         mCreateAffectorMenu = new QMenu(tr("Create affector"));
         connect(mCreateAffectorMenu, SIGNAL(triggered(QAction*)), this, SLOT(createAffectorAction(QAction*)));
@@ -177,7 +181,7 @@ const GpuParticleAffector* GpuParticleSystemTreeWidget::getCurrentAffector()
 
     AffectorType type = (AffectorType)affectorItem->data(0, Qt::UserRole).toInt();
 
-    GpuParticleEmitter* emitter = static_cast<GpuParticleEmitter*>(mGpuParticleSystem->getEmitters()[emitterIndex]);
+    const GpuParticleEmitter* emitter = mGpuParticleSystem->getEmitters()[emitterIndex];
     const GpuParticleAffector* affector = emitter->getAffectorNoThrow(type);
     return affector;
 }
@@ -273,7 +277,7 @@ void GpuParticleSystemTreeWidget::createEmitterAction()
     data.mRenderer->restartParticleSystem();
 }
 
-void GpuParticleSystemTreeWidget::copyEmitterAction()
+void GpuParticleSystemTreeWidget::copyAction()
 {
     if(!mParticleEmittersTree->currentItem()) {
         return;
@@ -291,6 +295,19 @@ void GpuParticleSystemTreeWidget::copyEmitterAction()
 
         data.copyFromGpuParticleEmitter(emitter);
     }
+    else {
+
+        int affectorIndex = mParticleEmittersTree->currentIndex().row();
+        QTreeWidgetItem* affectorItem = mParticleEmittersTree->currentItem();
+
+        AffectorType type = (AffectorType)affectorItem->data(0, Qt::UserRole).toInt();
+
+        int emitterIndex = getCurrentEmitterCoreIndex();
+        const GpuParticleEmitter* emitter = mGpuParticleSystem->getEmitters()[emitterIndex];
+        const GpuParticleAffector* affector = emitter->getAffectorNoThrow(type);
+
+        data.copyFromGpuParticleAffector(affector);
+    }
 }
 
 void GpuParticleSystemTreeWidget::pasteToNewEmitterAction()
@@ -307,6 +324,59 @@ void GpuParticleSystemTreeWidget::pasteToNewEmitterAction()
     setEmitterNames();
 
     mParticleEmittersTree->setCurrentItem(mParticleEmittersTree->topLevelItem(mParticleEmittersTree->topLevelItemCount()-1));
+
+    emit emitterChanged();
+
+    data.mRenderer->restartParticleSystem();
+}
+
+void GpuParticleSystemTreeWidget::pasteAffectorAction()
+{
+    if(!mParticleEmittersTree->currentItem()) {
+        return;
+    }
+
+    int emitterIndex = getCurrentEmitterCoreIndex();
+    if(emitterIndex < 0 || emitterIndex >= (int)mGpuParticleSystem->getEmitters().size()) {
+        return;
+    }
+
+    const GpuParticleAffector* clipboardAffector = data.mGpuParticleAffectorClipboard;
+    if(!clipboardAffector) {
+        QMessageBox::critical(this, tr("Creating affector failed!"), tr("No affector in clipboard!"));
+        return;
+    }
+
+    GpuParticleEmitter* emitter = const_cast<GpuParticleEmitter*>(mGpuParticleSystem->getEmitters()[emitterIndex]);
+    if(emitter->getAffectorNoThrow(clipboardAffector->getType())) {
+        emitter->removeAndDestroyAffector(clipboardAffector->getType());
+    }
+
+    GpuParticleAffector* affector = data.pasteToGpuParticleAffector();
+    emitter->addAffector(affector);
+
+    {
+        QSignalBlocker bl(mParticleEmittersTree);
+
+        QTreeWidgetItem* item = mParticleEmittersTree->topLevelItem(emitterIndex);
+
+        bool found = false;
+        for (int i = 0; i < item->childCount(); ++i) {
+            AffectorType type = (AffectorType)item->child(i)->data(0, Qt::UserRole).toInt();
+            if(type == affector->getType()) {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            QTreeWidgetItem* affectorItem = new QTreeWidgetItem();
+            affectorItem->setText(0, QString::fromStdString(affector->getAffectorProperty()));
+            affectorItem->setData(0, Qt::UserRole, affector->getType());
+            item->addChild(affectorItem);
+            item->sortChildren(0, Qt::AscendingOrder);
+        }
+    }
 
     emit emitterChanged();
 
@@ -346,7 +416,7 @@ void GpuParticleSystemTreeWidget::removeAction()
 
         AffectorType type = (AffectorType)affectorItem->data(0, Qt::UserRole).toInt();
 
-        GpuParticleEmitter* emitter = static_cast<GpuParticleEmitter*>(mGpuParticleSystem->getEmitters()[emitterIndex]);
+        GpuParticleEmitter* emitter = const_cast<GpuParticleEmitter*>(mGpuParticleSystem->getEmitters()[emitterIndex]);
         emitter->removeAndDestroyAffector(type);
 
         QSignalBlocker bl(mParticleEmittersTree);

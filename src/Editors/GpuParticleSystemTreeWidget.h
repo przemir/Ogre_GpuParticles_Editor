@@ -49,8 +49,9 @@ private:
 
 private slots:
     void createEmitterAction();
-    void copyEmitterAction();
+    void copyAction();
     void pasteToNewEmitterAction();
+    void pasteAffectorAction();
     void removeAction();
     void moveEmitterUpAction();
     void moveEmitterDownAction();

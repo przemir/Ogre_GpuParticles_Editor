@@ -19,6 +19,7 @@ ParticleEditorData::ParticleEditorData()
 ParticleEditorData::~ParticleEditorData()
 {
     OGRE_DELETE mGpuParticleEmitterClipboard;
+    OGRE_DELETE mGpuParticleAffectorClipboard;
 }
 
 QString ParticleEditorData::currentParticleSystemName() const
@@ -39,6 +40,18 @@ void ParticleEditorData::copyFromGpuParticleEmitter(const GpuParticleEmitter* em
 void ParticleEditorData::pasteToGpuParticleEmitter(GpuParticleEmitter* emitter) const
 {
     *emitter = *mGpuParticleEmitterClipboard;
+}
+
+void ParticleEditorData::copyFromGpuParticleAffector(const GpuParticleAffector* affector)
+{
+    OGRE_DELETE mGpuParticleAffectorClipboard;
+    mGpuParticleAffectorClipboard = affector ? affector->clone() : nullptr;
+}
+
+GpuParticleAffector* ParticleEditorData::pasteToGpuParticleAffector() const
+{
+    GpuParticleAffector* affector = mGpuParticleAffectorClipboard ? mGpuParticleAffectorClipboard->clone() : nullptr;
+    return affector;
 }
 
 Ogre::Root* ParticleEditorData::getRoot() const
