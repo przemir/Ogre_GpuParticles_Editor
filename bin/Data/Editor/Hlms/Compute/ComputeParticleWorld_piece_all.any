@@ -139,36 +139,43 @@ struct EmitterCoreData {
     float2 directionVelocity;
     float2 lifetime;
     float nextParticleSpawnTime;
-    float3 gravity;
-    uint useDepthCollision;
     uint spriteRange;
     uint useSpriteTrack;
     float spriteTrackTimes[8];
     float4 spriteCoordRange[8];
-    uint useColourTrack;
-    float colourTrackTimes[8];
-    float3 colourTrackValues[8];
-    uint useAlphaTrack;
-    float alphaTrackTimes[8];
-    float alphaTrackValues[8];
     uint useFader;
     float faderStartPhaseTime;
     float faderEndPhaseTime;
-    uint useSizeTrack;
-    float sizeTrackTimes[8];
-    float2 sizeTrackValues[8];
-    uint useVelocityTrack;
-    float velocityTrackTimes[8];
-    float velocityTrackValues[8];
     uint uniformSize;
     uint billboardType;
     uint spawnShape;
     float3 spawnShapeDimensions;
     
+    @property(affector_global_gravity)
+    float3 affectorGlobalGravity;
+    @end
     @property(affector_set_colour_track)
-    uint affectorSetColourTrackEnabled;
-    float affectorSetColourTrackTrackTimes[8];
-    float3 affectorSetColourTrackTrackValues[8];
+    uint   affectorSetColourTrackEnabled;
+    float  affectorSetColourTrackTimes[8];
+    float3 affectorSetColourTrackValues[8];
+    @end
+    @property(affector_set_alpha_track)
+    uint  affectorSetAlphaTrackEnabled;
+    float affectorSetAlphaTrackTimes[8];
+    float affectorSetAlphaTrackValues[8];
+    @end
+    @property(affector_set_size_track)
+    uint   affectorSetSizeTrackEnabled;
+    float  affectorSetSizeTrackTimes[8];
+    float2 affectorSetSizeTrackValues[8];
+    @end
+    @property(affector_set_velocity_track)
+    uint  affectorSetVelocityTrackEnabled;
+    float affectorSetVelocityTrackTimes[8];
+    float affectorSetVelocityTrackValues[8];
+    @end
+    @property(affector_depth_collision)
+    uint affectorDepthCollisionEnabled;
     @end
 };
 static const uint BillboardType_Point = 0;

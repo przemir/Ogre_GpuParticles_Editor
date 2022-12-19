@@ -17,8 +17,12 @@
 /// declared in the same order as enum below
 /// (though each affector is optional).
 enum AffectorType {
-    AFFECTOR_GRAVITY,
+    AFFECTOR_GLOBAL_GRAVITY,
     AFFECTOR_SET_COLOR_TRACK,
+    AFFECTOR_SET_ALPHA_TRACK,
+    AFFECTOR_SET_SIZE_TRACK,
+    AFFECTOR_SET_VELOCITY_TRACK,
+    AFFECTOR_DEPTH_COLLISION,
 
 
     ///
@@ -39,7 +43,7 @@ public:
 
     template <class T, int Elements, int Size>
     static void uploadTrack(float *& RESTRICT_ALIAS buffer, const std::map<float, T>& track, const T& defaultStartValue);
-    static void uploadVector2Track(float *& RESTRICT_ALIAS buffer, const std::map<float, Ogre::Vector2>& track);
+    static void uploadVector2Track(float *& RESTRICT_ALIAS buffer, const std::map<float, Ogre::Vector2>& track, const Ogre::Vector2& defaultStartValue = Ogre::Vector2::ZERO);
     static void uploadVector3Track(float *& RESTRICT_ALIAS buffer, const std::map<float, Ogre::Vector3>& track, const Ogre::Vector3& defaultStartValue = Ogre::Vector3::ZERO);
     static void uploadFloatTrack(float *& RESTRICT_ALIAS buffer, const std::map<float, float>& track, float defaultStartValue);
     static void uploadU32ToFloatArray(float *& RESTRICT_ALIAS buffer, Ogre::uint32 value);

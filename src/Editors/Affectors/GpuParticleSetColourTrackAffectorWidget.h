@@ -34,7 +34,6 @@ private:
     GpuParticleSetColourTrackAffector* mEditedObject = nullptr;
 
     QGroupBox* mColourTrackGroup;
-//    QToolButton* mShowColourTrackButton;
     ColourTrackTableWidget* mColourTrackTableWidget;
 };
 

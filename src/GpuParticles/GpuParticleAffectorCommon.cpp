@@ -46,9 +46,9 @@ void GpuParticleAffectorCommon::uploadFloatTrack(float*& buffer, const std::map<
     }
 }
 
-void GpuParticleAffectorCommon::uploadVector2Track(float*& buffer, const std::map<float, Ogre::Vector2>& track)
+void GpuParticleAffectorCommon::uploadVector2Track(float*& buffer, const std::map<float, Ogre::Vector2>& track, const Ogre::Vector2& defaultStartValue)
 {
-    uploadTrack<Ogre::Vector2, 2, MaxTrackValues>(buffer, track, Ogre::Vector2::ZERO);
+    uploadTrack<Ogre::Vector2, 2, MaxTrackValues>(buffer, track, defaultStartValue);
 }
 
 void GpuParticleAffectorCommon::uploadVector3Track(float*& buffer, const std::map<float, Ogre::Vector3>& track, const Ogre::Vector3& defaultStartValue)

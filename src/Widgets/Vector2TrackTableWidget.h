@@ -1,21 +1,21 @@
 /*
- * File: Point2dTrackTableWidget.h
+ * File: Vector2TrackTableWidget.h
  * Author: Przemysław Bągard
  * Created: 2021-7-20
  *
  */
 
-#ifndef POINT2DTRACKTABLEWIDGET_H
-#define POINT2DTRACKTABLEWIDGET_H
+#ifndef VECTOR2TRACKTABLEWIDGET_H
+#define VECTOR2TRACKTABLEWIDGET_H
 
 #include "TrackTableModel.h"
 #include "TrackTableWidget.h"
 #include <OgreVector2.h>
 
-class Point2dTrackTableWidget : public TrackTableWidget<Ogre::Vector2>
+class Vector2TrackTableWidget : public TrackTableWidget<Ogre::Vector2>
 {
 public:
-    Point2dTrackTableWidget();
+    Vector2TrackTableWidget();
 
 protected:
 

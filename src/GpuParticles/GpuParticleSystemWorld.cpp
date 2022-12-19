@@ -109,27 +109,13 @@ const int GpuParticleSystemWorld::EmitterCoreDataStructSize =
         sizeof(float) * 2u +            // Direction velocity range
         sizeof(float) * 2u +            // Lifetime range
         sizeof(float) * 1u +            // nextParticleSpawnTime
-        sizeof(float) * 3u +            // Gravity
-        sizeof(Ogre::uint32) * 1u +     // mDepthCollision
         sizeof(Ogre::uint32) * 1u +     // mGenerateRandomSpriteRange (upper possible index value).
         sizeof(Ogre::uint32) * 1u +     // mUseSpriteTrack (bool)
         sizeof(float) * 8u +            // Sprite track times (tresholds, when new sprite is used)
         sizeof(float) * 4u * 8u +       // Sprite texture coordinate ranges (for eight slots array)
-        sizeof(Ogre::uint32) * 1u +     // mUseColourTrack (bool)
-        sizeof(float) * 8u +            // Colour track times
-        sizeof(float) * 3u * 8u +       // Colour (rgb) track values
-        sizeof(Ogre::uint32) * 1u +     // mUseAlphaTrack (bool)
-        sizeof(float) * 8u +            // Alpha track times
-        sizeof(float) * 8u +            // Alpha track values
         sizeof(Ogre::uint32) * 1u +     // mUseFader (bool) (fader may be for alpha only or for all colour)
         sizeof(float) * 1u +            // mFaderStartPhaseTime (start phase of particle for fader)
         sizeof(float) * 1u +            // mFaderEndPhaseTime (last 'mFaderEndPhaseTime' seconds of particle life for fader)
-        sizeof(Ogre::uint32) * 1u +     // mUseSizeTrack (bool)
-        sizeof(float) * 8u +            // Size track times
-        sizeof(float) * 2u * 8u +       // Size (rgb) track values
-        sizeof(Ogre::uint32) * 1u +     // mUseVelocityTrack (bool)
-        sizeof(float) * 8u +            // Velocity track times
-        sizeof(float) * 8u +            // Velocity track values (only scalar because direction is important)
         sizeof(Ogre::uint32) * 1u +     // isUniformSize (bool)
         sizeof(Ogre::uint32) * 1u +     // billboardType (Ogre::v1::BillboardType)
         sizeof(Ogre::uint32) * 1u +     // Spawn shape
@@ -1190,12 +1176,6 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
         float nextParticleSpawnTime = emitterCore->getTimeToSpawnParticle();
         *buffer++ = nextParticleSpawnTime;
 
-        *buffer++ = emitterCore->mGravity.x;
-        *buffer++ = emitterCore->mGravity.y;
-        *buffer++ = emitterCore->mGravity.z;
-
-        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, mUseDepthTexture && emitterCore->mUseDepthCollision ? 1u : 0u);
-
         Ogre::uint32 spriteCount = std::min<Ogre::uint32>(emitterCore->mSpriteFlipbookCoords.size(), GpuParticleEmitter::MaxSprites);
         GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, emitterCore->mSpriteMode == GpuParticleEmitter::SpriteMode::SetWithStart ? (Ogre::uint32)spriteCount : (Ogre::uint32)0);
         GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) (emitterCore->mSpriteMode == GpuParticleEmitter::SpriteMode::ChangeWithTrack) );
@@ -1238,22 +1218,9 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
             *buffer++ = texCoordSize.y;
         }
 
-        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseColourTrack);
-        GpuParticleAffectorCommon::uploadVector3Track(buffer, emitterCore->mColourTrack);
-
-        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseAlphaTrack);
-        GpuParticleAffectorCommon::uploadFloatTrack(buffer, emitterCore->mAlphaTrack, 1.0f);
-
         GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mFaderMode);
         *buffer++ = emitterCore->mParticleFaderStartTime;
         *buffer++ = emitterCore->mParticleFaderEndTime;
-
-        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseSizeTrack);
-        GpuParticleAffectorCommon::uploadVector2Track(buffer, emitterCore->mSizeTrack);
-
-        GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) emitterCore->mUseVelocityTrack);
-        GpuParticleAffectorCommon::uploadFloatTrack(buffer, emitterCore->mVelocityTrack, 0.0f);
-
 
 
         //        for (size_t i = 0; i < GpuParticleEmitter::MaxSprites; ++i) {
@@ -1282,7 +1249,10 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
                 affector = itEmitterAffector->second;
             }
 
+            const float *bufferAffectorStart = buffer;
             buffer = affector->prepareAffectorEmitterBuffer(buffer);
+            OGRE_ASSERT_LOW( (size_t)(buffer - bufferAffectorStart) * sizeof(float) ==
+                             affector->getAffectorEmitterBufferSize() );
         }
     }
 

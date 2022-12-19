@@ -8,13 +8,14 @@
 				{
 					"pos": [0, 0, 0],
 					"rot": [1, 0, 0, 0],
-					"spriteMode": "SetWithStart",
-					"datablock": "ParticleAlphaBlend",
-					"spriteTrack": [[0, [0, 0]], [0, [1, 0]], [0, [0, 1]], [0, [1, 1]]],
-					"emitterLifetime": 0,
-					"emissionRate": 60,
 					"burstMode": false,
+					"emissionRate": 60,
 					"burstParticles": 0,
+					"emitterLifetime": 0,
+					"particleLifetime": [0.8, 1],
+					"datablock": "ParticleAlphaBlend",
+					"spriteMode": "SetWithStart",
+					"spriteTrack": [[0, [0, 0]], [0, [1, 0]], [0, [0, 1]], [0, [1, 1]]],
 					"spawnShape": "Point",
 					"spawnShapeDimensions": [0, 0, 0],
 					"faderMode": "Enabled",
@@ -25,14 +26,18 @@
 					"colourA": [1, 1, 0, 1],
 					"colourB": [1, 1, 1, 1],
 					"direction": [0, 0, 0],
-					"gravity": [0, 0, 0],
-					"useDepthCollision": false,
-					"particleLifetime": [0.8, 1],
 					"size": [0.2, 0.5],
 					"sizeY": [1, 1],
 					"spotAngle": [0, 0.0872672],
 					"directionVelocity": [0.9, 1.2],
-					"colourTrack": [[0, [0.75, 0.659, 0]], [0.2, [0.75, 0.365, 0]], [0.7, [0.144, 0.015, 0]]]
+					"affectors":
+					{
+						"affector_set_colour_track":
+						{
+							"enabled": true,
+							"colourTrack": [[0, [0.75, 0.659, 0]], [0.2, [0.75, 0.365, 0]], [0.7, [0.144, 0.015, 0]]]
+						}
+					}
 				}
 			]
 		}

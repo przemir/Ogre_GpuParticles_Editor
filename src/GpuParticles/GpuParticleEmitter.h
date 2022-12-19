@@ -170,25 +170,6 @@ public:
     float mDirectionVelocityMin = 0.0f;
     float mDirectionVelocityMax = 1.0f;
 
-    Ogre::Vector3 mGravity = Ogre::Vector3::ZERO;
-    bool mUseDepthCollision = false;
-
-    /// Note that only first GpuParticleEmitter::MaxTrackValues will be used.
-    bool mUseColourTrack = false; //
-    typedef std::map<float, Ogre::Vector3> Vector3Track; // deprecated
-    Vector3Track mColourTrack; //
-
-    bool mUseAlphaTrack = false;
-    typedef std::map<float, float> FloatTrack;
-    FloatTrack mAlphaTrack;
-
-    bool mUseSizeTrack = false;
-    typedef std::map<float, Ogre::Vector2> Vector2Track;
-    Vector2Track mSizeTrack;
-
-    bool mUseVelocityTrack = false;
-    FloatTrack mVelocityTrack;
-
     typedef std::map<AffectorType, GpuParticleAffector*> AffectorMap;
     const AffectorMap& getAffectors() const;
     const GpuParticleAffector* getAffectorNoThrow(AffectorType type) const;

@@ -1,11 +1,11 @@
 /*
- * File: Point2dTrackTableWidget.cpp
+ * File: Vector2TrackTableWidget.cpp
  * Author: Przemysław Bągard
  * Created: 2021-7-20
  *
  */
 
-#include "Point2dTrackTableWidget.h"
+#include "Vector2TrackTableWidget.h"
 #include "Point2dWidget.h"
 
 #include <QApplication>
@@ -87,18 +87,18 @@ namespace {
 
 }
 
-Point2dTrackTableWidget::Point2dTrackTableWidget()
+Vector2TrackTableWidget::Vector2TrackTableWidget()
 {
     Delegate* valueColumnDelegate = new Delegate(mTrackTableModel, this);
     setItemDelegateForColumn(1, valueColumnDelegate);
 }
 
-Ogre::Vector2 Point2dTrackTableWidget::defaultValue() const
+Ogre::Vector2 Vector2TrackTableWidget::defaultValue() const
 {
     return Ogre::Vector2::ZERO;
 }
 
-Ogre::Vector2 Point2dTrackTableWidget::lerp(const Ogre::Vector2& a, const Ogre::Vector2& b, float percent) const
+Ogre::Vector2 Vector2TrackTableWidget::lerp(const Ogre::Vector2& a, const Ogre::Vector2& b, float percent) const
 {
     return a + (b-a) * percent;
 }

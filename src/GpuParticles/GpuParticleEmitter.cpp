@@ -53,16 +53,6 @@ GpuParticleEmitter::GpuParticleEmitter(const GpuParticleEmitter& other)
     , mSpotAngleMax(other.mSpotAngleMax)
     , mDirectionVelocityMin(other.mDirectionVelocityMin)
     , mDirectionVelocityMax(other.mDirectionVelocityMax)
-    , mGravity(other.mGravity)
-    , mUseDepthCollision(other.mUseDepthCollision)
-    , mUseColourTrack(other.mUseColourTrack)
-    , mColourTrack(other.mColourTrack)
-    , mUseAlphaTrack(other.mUseAlphaTrack)
-    , mAlphaTrack(other.mAlphaTrack)
-    , mUseSizeTrack(other.mUseSizeTrack)
-    , mSizeTrack(other.mSizeTrack)
-    , mUseVelocityTrack(other.mUseVelocityTrack)
-    , mVelocityTrack(other.mVelocityTrack)
 {
     for(AffectorMap::const_iterator it = other.mAffectors.begin(); it != other.mAffectors.end(); ++it) {
         addAffector(it->second->clone());
@@ -101,16 +91,6 @@ GpuParticleEmitter& GpuParticleEmitter::operator=(const GpuParticleEmitter& othe
     mSpotAngleMax = other.mSpotAngleMax;
     mDirectionVelocityMin = other.mDirectionVelocityMin;
     mDirectionVelocityMax = other.mDirectionVelocityMax;
-    mGravity = other.mGravity;
-    mUseDepthCollision = other.mUseDepthCollision;
-    mUseColourTrack = other.mUseColourTrack;
-    mColourTrack = other.mColourTrack;
-    mUseAlphaTrack = other.mUseAlphaTrack;
-    mAlphaTrack = other.mAlphaTrack;
-    mUseSizeTrack = other.mUseSizeTrack;
-    mSizeTrack = other.mSizeTrack;
-    mUseVelocityTrack = other.mUseVelocityTrack;
-    mVelocityTrack = other.mVelocityTrack;
 
     // delete old affectors
     for(AffectorMap::const_iterator it = mAffectors.begin(); it != mAffectors.end(); ++it) {

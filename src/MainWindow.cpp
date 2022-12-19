@@ -51,7 +51,12 @@
 #include <GpuParticles/Hlms/HlmsParticleDatablock.h>
 #include <Widgets/ColourEditField.h>
 
+#include <Editors/Affectors/GpuParticleDepthCollisionAffectorWidget.h>
+#include <Editors/Affectors/GpuParticleGlobalGravityAffectorWidget.h>
+#include <Editors/Affectors/GpuParticleSetAlphaTrackAffectorWidget.h>
 #include <Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.h>
+#include <Editors/Affectors/GpuParticleSetSizeTrackAffectorWidget.h>
+#include <Editors/Affectors/GpuParticleSetVelocityTrackAffectorWidget.h>
 
 namespace {
     class ScrollAreaWithSizeHint: public QScrollArea {
@@ -456,7 +461,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::createAffectorWidgets()
 {
+    createAffectorWidget(AFFECTOR_GLOBAL_GRAVITY, new GpuParticleGlobalGravityAffectorWidget());
     createAffectorWidget(AFFECTOR_SET_COLOR_TRACK, new GpuParticleSetColourTrackAffectorWidget());
+    createAffectorWidget(AFFECTOR_SET_ALPHA_TRACK, new GpuParticleSetAlphaTrackAffectorWidget());
+    createAffectorWidget(AFFECTOR_SET_SIZE_TRACK, new GpuParticleSetSizeTrackAffectorWidget());
+    createAffectorWidget(AFFECTOR_SET_VELOCITY_TRACK, new GpuParticleSetVelocityTrackAffectorWidget());
+    createAffectorWidget(AFFECTOR_DEPTH_COLLISION, new GpuParticleDepthCollisionAffectorWidget());
 }
 
 void MainWindow::createAffectorWidget(AffectorType type, GpuParticleAffectorWidget* widget)

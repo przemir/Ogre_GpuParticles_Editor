@@ -30,10 +30,6 @@ void GpuParticleSetColourTrackAffectorWidget::createGui()
         {
             QVBoxLayout* layout = new QVBoxLayout();
 
-//            mShowColourTrackButton = new QToolButton();
-//            mShowColourTrackButton->setArrowType(Qt::DownArrow);
-//            layout->addWidget(mShowColourTrackButton);
-
             {
                 mColourTrackTableWidget = new ColourTrackTableWidget();
                 mColourTrackTableWidget->setMaxCount(GpuParticleAffectorCommon::MaxTrackValues);

@@ -25,9 +25,6 @@ class Point3dWidget;
 class EulerDegreeHVSWidget;
 class ColourEditField;
 class RangeWidget;
-class ColourTrackTableWidget;
-class FloatTrackTableWidget;
-class Point2dTrackTableWidget;
 class SpriteTrackTableWidget;
 class QPushButton;
 
@@ -73,9 +70,6 @@ private:
     QComboBox* mSpawnShapeCombo;
     Point3dWidget* mSpawnShapeDimensionsWidget;
 
-    // TODO:
-    // mSpriteMode, mSpriteNames, mSpriteTimes
-
     Point3dWidget* mPos3dWidget;
     EulerDegreeHVSWidget* mEulerRotWidget;
     ColourEditField* mColourAEditField;
@@ -85,11 +79,7 @@ private:
     RangeWidget* mSizeXRangeWidget;
     RangeWidget* mSizeYRangeWidget;
 
-    QCheckBox* mUseDepthCollisionsCheckBox;
-
-
     Point3dWidget* mDirectionWidget;
-    Point3dWidget* mGravityWidget;
 
     RangeWidget* mParticleLifetimeRangeWidget;
     RangeWidget* mSpotAngleRangeWidget;
@@ -102,22 +92,6 @@ private:
     QGroupBox* mSpriteTrackGroup;
 //    QToolButton* mShowSpriteTrackButton;
     SpriteTrackTableWidget* mSpriteTrackTableWidget;
-
-    QGroupBox* mColourTrackGroup;
-//    QToolButton* mShowColourTrackButton;
-    ColourTrackTableWidget* mColourTrackTableWidget;
-
-    QGroupBox* mAlphaTrackGroup;
-//    QToolButton* mShowAlphaTrackButton;
-    FloatTrackTableWidget* mAlphaTrackTableWidget;
-
-    QGroupBox* mSizeTrackGroup;
-//    QToolButton* mShowSizeTrackButton;
-    Point2dTrackTableWidget* mSizeTrackTableWidget;
-
-    QGroupBox* mVelocityTrackGroup;
-//    QToolButton* mShowVelocityTrackButton;
-    FloatTrackTableWidget* mVelocityTrackTableWidget;
 
     ParticleEditorData& data;
 

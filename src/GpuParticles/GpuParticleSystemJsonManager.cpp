@@ -277,18 +277,6 @@ void GpuParticleSystemJsonManager::loadGpuParticleEmitter(const rapidjson::Value
         readVector3Value(itor->value, gpuParticleEmitter->mDirection);
     }
 
-    itor = json.FindMember("gravity");
-    if( itor != json.MemberEnd() && itor->value.IsArray() )
-    {
-        readVector3Value(itor->value, gpuParticleEmitter->mGravity);
-    }
-
-    itor = json.FindMember("useDepthCollision");
-    if (itor != json.MemberEnd() && itor->value.IsBool())
-    {
-        gpuParticleEmitter->mUseDepthCollision = itor->value.GetBool();
-    }
-
     // min-max values
     itor = json.FindMember("particleLifetime");
     if (itor != json.MemberEnd() && itor->value.IsArray())
@@ -318,35 +306,6 @@ void GpuParticleSystemJsonManager::loadGpuParticleEmitter(const rapidjson::Value
     if (itor != json.MemberEnd() && itor->value.IsArray())
     {
         readMinMaxFloatValue(itor->value, gpuParticleEmitter->mDirectionVelocityMin, gpuParticleEmitter->mDirectionVelocityMax);
-    }
-
-    // tracks
-    itor = json.FindMember("colourTrack");
-    if (itor != json.MemberEnd() && itor->value.IsArray())
-    {
-        readVector3Track(itor->value, gpuParticleEmitter->mColourTrack);
-        gpuParticleEmitter->mUseColourTrack = true;
-    }
-
-    itor = json.FindMember("alphaTrack");
-    if (itor != json.MemberEnd() && itor->value.IsArray())
-    {
-        readFloatTrack(itor->value, gpuParticleEmitter->mAlphaTrack);
-        gpuParticleEmitter->mUseAlphaTrack = true;
-    }
-
-    itor = json.FindMember("sizeTrack");
-    if (itor != json.MemberEnd() && itor->value.IsArray())
-    {
-        readVector2Track(itor->value, gpuParticleEmitter->mSizeTrack);
-        gpuParticleEmitter->mUseSizeTrack = true;
-    }
-
-    itor = json.FindMember("velocityTrack");
-    if (itor != json.MemberEnd() && itor->value.IsArray())
-    {
-        readFloatTrack(itor->value, gpuParticleEmitter->mVelocityTrack);
-        gpuParticleEmitter->mUseVelocityTrack = true;
     }
 
     itor = json.FindMember("affectors");
@@ -426,12 +385,32 @@ void GpuParticleSystemJsonManager::saveGpuParticleEmitter(const GpuParticleEmitt
     toStr(gpuParticleEmitter->mRot, outString);
 
     outString += ",";
-    writeGpuEmitterVariable("spriteMode", outString);
-    outString += quote(GpuParticleEmitter::spriteModeToStr(gpuParticleEmitter->mSpriteMode));
+    writeGpuEmitterVariable("burstMode", outString);
+    toStr(gpuParticleEmitter->mBurstMode, outString);
+
+    outString += ",";
+    writeGpuEmitterVariable("emissionRate", outString);
+    outString += Ogre::StringConverter::toString( gpuParticleEmitter->mEmissionRate );
+
+    outString += ",";
+    writeGpuEmitterVariable("burstParticles", outString);
+    outString += Ogre::StringConverter::toString( gpuParticleEmitter->mBurstParticles );
+
+    outString += ",";
+    writeGpuEmitterVariable("emitterLifetime", outString);
+    outString += Ogre::StringConverter::toString( gpuParticleEmitter->mEmitterLifetime );
+
+    outString += ",";
+    writeGpuEmitterVariable("particleLifetime", outString);
+    toStrMinMax(gpuParticleEmitter->mParticleLifetimeMin, gpuParticleEmitter->mParticleLifetimeMax, outString);
 
     outString += ",";
     writeGpuEmitterVariable("datablock", outString);
     outString += quote(gpuParticleEmitter->mDatablockName);
+
+    outString += ",";
+    writeGpuEmitterVariable("spriteMode", outString);
+    outString += quote(GpuParticleEmitter::spriteModeToStr(gpuParticleEmitter->mSpriteMode));
 
     //
     outString += ",";
@@ -457,23 +436,6 @@ void GpuParticleSystemJsonManager::saveGpuParticleEmitter(const GpuParticleEmitt
     }
     outString += "]";
     //
-
-
-    outString += ",";
-    writeGpuEmitterVariable("emitterLifetime", outString);
-    outString += Ogre::StringConverter::toString( gpuParticleEmitter->mEmitterLifetime );
-
-    outString += ",";
-    writeGpuEmitterVariable("emissionRate", outString);
-    outString += Ogre::StringConverter::toString( gpuParticleEmitter->mEmissionRate );
-
-    outString += ",";
-    writeGpuEmitterVariable("burstMode", outString);
-    toStr(gpuParticleEmitter->mBurstMode, outString);
-
-    outString += ",";
-    writeGpuEmitterVariable("burstParticles", outString);
-    outString += Ogre::StringConverter::toString( gpuParticleEmitter->mBurstParticles );
 
     outString += ",";
     writeGpuEmitterVariable("spawnShape", outString);
@@ -516,18 +478,6 @@ void GpuParticleSystemJsonManager::saveGpuParticleEmitter(const GpuParticleEmitt
     toStr(gpuParticleEmitter->mDirection, outString);
 
     outString += ",";
-    writeGpuEmitterVariable("gravity", outString);
-    toStr(gpuParticleEmitter->mGravity, outString);
-
-    outString += ",";
-    writeGpuEmitterVariable("useDepthCollision", outString);
-    toStr(gpuParticleEmitter->mUseDepthCollision, outString);
-
-    outString += ",";
-    writeGpuEmitterVariable("particleLifetime", outString);
-    toStrMinMax(gpuParticleEmitter->mParticleLifetimeMin, gpuParticleEmitter->mParticleLifetimeMax, outString);
-
-    outString += ",";
     writeGpuEmitterVariable("size", outString);
     toStrMinMax(gpuParticleEmitter->mSizeMin, gpuParticleEmitter->mSizeMax, outString);
 
@@ -542,30 +492,6 @@ void GpuParticleSystemJsonManager::saveGpuParticleEmitter(const GpuParticleEmitt
     outString += ",";
     writeGpuEmitterVariable("directionVelocity", outString);
     toStrMinMax(gpuParticleEmitter->mDirectionVelocityMin, gpuParticleEmitter->mDirectionVelocityMax, outString);
-
-    if(gpuParticleEmitter->mUseColourTrack) {
-        outString += ",";
-        writeGpuEmitterVariable("colourTrack", outString);
-        writeVector3Track(gpuParticleEmitter->mColourTrack, outString);
-    }
-
-    if(gpuParticleEmitter->mUseAlphaTrack) {
-        outString += ",";
-        writeGpuEmitterVariable("alphaTrack", outString);
-        writeFloatTrack(gpuParticleEmitter->mAlphaTrack, outString);
-    }
-
-    if(gpuParticleEmitter->mUseSizeTrack) {
-        outString += ",";
-        writeGpuEmitterVariable("sizeTrack", outString);
-        writeVector2Track(gpuParticleEmitter->mSizeTrack, outString);
-    }
-
-    if(gpuParticleEmitter->mUseVelocityTrack) {
-        outString += ",";
-        writeGpuEmitterVariable("velocityTrack", outString);
-        writeFloatTrack(gpuParticleEmitter->mVelocityTrack, outString);
-    }
 
     outString += ",";
     outString += "\n\t\t\t\t\t" + quote("affectors") + ":";
@@ -653,9 +579,9 @@ void GpuParticleSystemJsonManager::readMinMaxFloatValue(const rapidjson::Value& 
     }
 }
 
-void GpuParticleSystemJsonManager::readFloatTrack(const rapidjson::Value& array, GpuParticleEmitter::FloatTrack& valueMax)
+void GpuParticleSystemJsonManager::readFloatTrack(const rapidjson::Value& array, GpuParticleAffectorCommon::FloatTrack& valueMax)
 {
-    const rapidjson::SizeType arraySize = std::min((rapidjson::SizeType)GpuParticleEmitter::MaxTrackValues, array.Size());
+    const rapidjson::SizeType arraySize = std::min((rapidjson::SizeType)GpuParticleAffectorCommon::MaxTrackValues, array.Size());
     for (rapidjson::SizeType i = 0; i<arraySize; ++i)
     {
         if(array[i].IsArray() && array[i].Size() >= 2 && array[i][0].IsNumber()) {
@@ -667,9 +593,9 @@ void GpuParticleSystemJsonManager::readFloatTrack(const rapidjson::Value& array,
     }
 }
 
-void GpuParticleSystemJsonManager::readVector2Track(const rapidjson::Value& array, GpuParticleEmitter::Vector2Track& valueMax)
+void GpuParticleSystemJsonManager::readVector2Track(const rapidjson::Value& array, GpuParticleAffectorCommon::Vector2Track& valueMax)
 {
-    const rapidjson::SizeType arraySize = std::min((rapidjson::SizeType)GpuParticleEmitter::MaxTrackValues, array.Size());
+    const rapidjson::SizeType arraySize = std::min((rapidjson::SizeType)GpuParticleAffectorCommon::MaxTrackValues, array.Size());
     for (rapidjson::SizeType i = 0; i<arraySize; ++i)
     {
         if(array[i].IsArray() && array[i].Size() >= 2 && array[i][0].IsNumber()) {
@@ -683,9 +609,9 @@ void GpuParticleSystemJsonManager::readVector2Track(const rapidjson::Value& arra
     }
 }
 
-void GpuParticleSystemJsonManager::readVector3Track(const rapidjson::Value& array, GpuParticleEmitter::Vector3Track& valueMax)
+void GpuParticleSystemJsonManager::readVector3Track(const rapidjson::Value& array, GpuParticleAffectorCommon::Vector3Track& valueMax)
 {
-    const rapidjson::SizeType arraySize = std::min((rapidjson::SizeType)GpuParticleEmitter::MaxTrackValues, array.Size());
+    const rapidjson::SizeType arraySize = std::min((rapidjson::SizeType)GpuParticleAffectorCommon::MaxTrackValues, array.Size());
     for (rapidjson::SizeType i = 0; i<arraySize; ++i)
     {
         if(array[i].IsArray() && array[i].Size() >= 2 && array[i][0].IsNumber()) {
@@ -759,10 +685,10 @@ Ogre::String GpuParticleSystemJsonManager::quote(const Ogre::String& value)
     return "\"" + value + "\"";
 }
 
-void GpuParticleSystemJsonManager::writeFloatTrack(const GpuParticleEmitter::FloatTrack& valueTrack, Ogre::String& outString)
+void GpuParticleSystemJsonManager::writeFloatTrack(const GpuParticleAffectorCommon::FloatTrack& valueTrack, Ogre::String& outString)
 {
     outString += "[";
-    for (GpuParticleEmitter::FloatTrack::const_iterator it = valueTrack.begin(); it != valueTrack.end(); ++it)
+    for (GpuParticleAffectorCommon::FloatTrack::const_iterator it = valueTrack.begin(); it != valueTrack.end(); ++it)
     {
         if(it != valueTrack.begin()) {
             outString += ", ";
@@ -780,10 +706,10 @@ void GpuParticleSystemJsonManager::writeFloatTrack(const GpuParticleEmitter::Flo
     outString += "]";
 }
 
-void GpuParticleSystemJsonManager::writeVector2Track(const GpuParticleEmitter::Vector2Track& valueTrack, Ogre::String& outString)
+void GpuParticleSystemJsonManager::writeVector2Track(const GpuParticleAffectorCommon::Vector2Track& valueTrack, Ogre::String& outString)
 {
     outString += "[";
-    for (GpuParticleEmitter::Vector2Track::const_iterator it = valueTrack.begin(); it != valueTrack.end(); ++it)
+    for (GpuParticleAffectorCommon::Vector2Track::const_iterator it = valueTrack.begin(); it != valueTrack.end(); ++it)
     {
         if(it != valueTrack.begin()) {
             outString += ", ";
@@ -805,10 +731,10 @@ void GpuParticleSystemJsonManager::writeVector2Track(const GpuParticleEmitter::V
     outString += "]";
 }
 
-void GpuParticleSystemJsonManager::writeVector3Track(const GpuParticleEmitter::Vector3Track& valueTrack, Ogre::String& outString)
+void GpuParticleSystemJsonManager::writeVector3Track(const GpuParticleAffectorCommon::Vector3Track& valueTrack, Ogre::String& outString)
 {
     outString += "[";
-    for (GpuParticleEmitter::Vector3Track::const_iterator it = valueTrack.begin(); it != valueTrack.end(); ++it)
+    for (GpuParticleAffectorCommon::Vector3Track::const_iterator it = valueTrack.begin(); it != valueTrack.end(); ++it)
     {
         if(it != valueTrack.begin()) {
             outString += ", ";

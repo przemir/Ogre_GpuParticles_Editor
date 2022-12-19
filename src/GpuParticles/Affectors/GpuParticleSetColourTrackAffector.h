@@ -37,7 +37,8 @@ public:
 #endif
 
 public:
-    bool mEnabled = false;
+    bool mEnabled;
+    /// Note that only first GpuParticleAffectorCommon::MaxTrackValues will be used.
     typedef std::map<float, Ogre::Vector3> Vector3Track;
     Vector3Track mColourTrack;
 };

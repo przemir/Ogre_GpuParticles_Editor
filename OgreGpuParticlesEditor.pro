@@ -92,9 +92,19 @@ DEPENDPATH  += src/ \
 VPATH = src/
 
 SOURCES += main.cpp \
+    src/Editors/Affectors/GpuParticleDepthCollisionAffectorWidget.cpp \
+    src/Editors/Affectors/GpuParticleGlobalGravityAffectorWidget.cpp \
+    src/Editors/Affectors/GpuParticleSetAlphaTrackAffectorWidget.cpp \
     src/Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.cpp \
+    src/Editors/Affectors/GpuParticleSetSizeTrackAffectorWidget.cpp \
+    src/Editors/Affectors/GpuParticleSetVelocityTrackAffectorWidget.cpp \
     src/Editors/GpuParticleAffectorWidget.cpp \
+    src/GpuParticles/Affectors/GpuParticleDepthCollisionAffector.cpp \
+    src/GpuParticles/Affectors/GpuParticleGlobalGravityAffector.cpp \
+    src/GpuParticles/Affectors/GpuParticleSetAlphaTrackAffector.cpp \
     src/GpuParticles/Affectors/GpuParticleSetColourTrackAffector.cpp \
+    src/GpuParticles/Affectors/GpuParticleSetSizeTrackAffector.cpp \
+    src/GpuParticles/Affectors/GpuParticleSetVelocityTrackAffector.cpp \
     src/GpuParticles/GpuParticleAffector.cpp \
     src/GpuParticles/GpuParticleAffectorCommon.cpp \
     src/MainWindow.cpp \
@@ -120,7 +130,6 @@ SOURCES += main.cpp \
     src/Widgets/DoubleValueController.cpp \
     src/Widgets/EulerDegreeHVSWidget.cpp \
     src/Widgets/FloatTrackTableWidget.cpp \
-    src/Widgets/Point2dTrackTableWidget.cpp \
     src/Widgets/Point2dWidget.cpp \
     src/Widgets/Point3dWidget.cpp \
     src/Widgets/RangeWidget.cpp \
@@ -144,12 +153,23 @@ SOURCES += main.cpp \
     src/Editors/GpuParticleSystemsListWidget.cpp \
     src/Editors/GpuParticleSystemTreeWidget.cpp \
     src/Editors/SamplerblockWidget.cpp \
-    src/Editors/UnlitDatablockWidget.cpp
+    src/Editors/UnlitDatablockWidget.cpp \
+    src/Widgets/Vector2TrackTableWidget.cpp
 
 HEADERS  += \
+    src/Editors/Affectors/GpuParticleDepthCollisionAffectorWidget.h \
+    src/Editors/Affectors/GpuParticleGlobalGravityAffectorWidget.h \
+    src/Editors/Affectors/GpuParticleSetAlphaTrackAffectorWidget.h \
     src/Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.h \
+    src/Editors/Affectors/GpuParticleSetSizeTrackAffectorWidget.h \
+    src/Editors/Affectors/GpuParticleSetVelocityTrackAffectorWidget.h \
     src/Editors/GpuParticleAffectorWidget.h \
+    src/GpuParticles/Affectors/GpuParticleDepthCollisionAffector.h \
+    src/GpuParticles/Affectors/GpuParticleGlobalGravityAffector.h \
+    src/GpuParticles/Affectors/GpuParticleSetAlphaTrackAffector.h \
     src/GpuParticles/Affectors/GpuParticleSetColourTrackAffector.h \
+    src/GpuParticles/Affectors/GpuParticleSetSizeTrackAffector.h \
+    src/GpuParticles/Affectors/GpuParticleSetVelocityTrackAffector.h \
     src/GpuParticles/GpuParticleAffector.h \
     src/GpuParticles/GpuParticleAffectorCommon.h \
     src/MainWindow.h \
@@ -175,7 +195,6 @@ HEADERS  += \
     src/Widgets/DoubleValueController.h \
     src/Widgets/EulerDegreeHVSWidget.h \
     src/Widgets/FloatTrackTableWidget.h \
-    src/Widgets/Point2dTrackTableWidget.h \
     src/Widgets/Point2dWidget.h \
     src/Widgets/Point3dWidget.h \
     src/Widgets/RangeWidget.h \
@@ -200,7 +219,8 @@ HEADERS  += \
     src/Editors/GpuParticleSystemsListWidget.h \
     src/Editors/GpuParticleSystemTreeWidget.h \
     src/Editors/SamplerblockWidget.h \
-    src/Editors/UnlitDatablockWidget.h
+    src/Editors/UnlitDatablockWidget.h \
+    src/Widgets/Vector2TrackTableWidget.h
 
 CONFIG += console
 

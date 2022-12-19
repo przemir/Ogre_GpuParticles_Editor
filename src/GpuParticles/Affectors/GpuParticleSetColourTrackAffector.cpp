@@ -12,13 +12,14 @@
 #endif
 
 GpuParticleSetColourTrackAffector::GpuParticleSetColourTrackAffector()
+    : mEnabled(false)
 {
 
 }
 
 Ogre::uint32 GpuParticleSetColourTrackAffector::getAffectorEmitterBufferSize() const
 {
-    return sizeof(Ogre::uint32) * 1u +     // mUseColourTrack (bool)
+    return sizeof(Ogre::uint32) * 1u +     // mEnabled (bool)
            sizeof(float) * 8u +            // Colour track times
            sizeof(float) * 3u * 8u;        // Colour (rgb) track values
 }

@@ -10,7 +10,12 @@
 #include <OgreId.h>
 #include <OgreStringConverter.h>
 #include <GpuParticles/GpuParticleSystem.h>
+#include <GpuParticles/Affectors/GpuParticleDepthCollisionAffector.h>
+#include <GpuParticles/Affectors/GpuParticleGlobalGravityAffector.h>
+#include <GpuParticles/Affectors/GpuParticleSetAlphaTrackAffector.h>
 #include <GpuParticles/Affectors/GpuParticleSetColourTrackAffector.h>
+#include <GpuParticles/Affectors/GpuParticleSetSizeTrackAffector.h>
+#include <GpuParticles/Affectors/GpuParticleSetVelocityTrackAffector.h>
 
 template<> GpuParticleSystemResourceManager *Ogre::Singleton<GpuParticleSystemResourceManager>::msSingleton = 0;
 
@@ -121,7 +126,12 @@ void GpuParticleSystemResourceManager::destroyParticleSystem(const GpuParticleSy
 
 void GpuParticleSystemResourceManager::registerCommonAffectors()
 {
+    registerAffector(new GpuParticleGlobalGravityAffector());
     registerAffector(new GpuParticleSetColourTrackAffector());
+    registerAffector(new GpuParticleSetAlphaTrackAffector());
+    registerAffector(new GpuParticleSetSizeTrackAffector());
+    registerAffector(new GpuParticleSetVelocityTrackAffector());
+    registerAffector(new GpuParticleDepthCollisionAffector());
 }
 
 void GpuParticleSystemResourceManager::registerAffector(GpuParticleAffector* affector)

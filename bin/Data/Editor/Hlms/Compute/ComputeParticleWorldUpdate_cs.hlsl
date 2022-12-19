@@ -107,8 +107,8 @@ void main
     //     linearDepth = 0.0f;
     // }
     
-@property(useDepthTexture)
-    if(emitterCore.useDepthCollision)
+@property(useDepthTexture && affector_depth_collision)
+    if(emitterCore.affectorDepthCollisionEnabled)
     {  
         float4 pos2d = posToScreen(float4(particle.pos, 1.0));
         if(pos2d.x > -1.0 && pos2d.x < 1.0 && pos2d.y > -1.0 && pos2d.y < 1.0) {
@@ -155,7 +155,9 @@ void main
     particle.pos += particle.dir*particle.dirVelocity*elapsedTime;
     
     float3 dir = particle.dir * particle.dirVelocity;
-    dir += emitterCore.gravity * elapsedTime;
+@property(affector_global_gravity)
+    dir += emitterCore.affectorGlobalGravity * elapsedTime;
+@end
     particle.dirVelocity = length(dir);
     if(particle.dirVelocity != 0.0) {
         particle.dir = normalize(dir);
@@ -165,29 +167,27 @@ void main
         particle.spriteNumber = binarySearch8(particle.lifetime, emitterCore.spriteTrackTimes);
     }
     
-    if(emitterCore.useColourTrack) {
-        particle.colour.xyz = getFromTrack3(particle.lifetime, emitterCore.colourTrackTimes, emitterCore.colourTrackValues);
-    }
-    
 @property(affector_set_colour_track)
     if(emitterCore.affectorSetColourTrackEnabled) {
-        particle.colour.xyz = getFromTrack3(particle.lifetime, emitterCore.affectorSetColourTrackTrackTimes, emitterCore.affectorSetColourTrackTrackValues);
+        particle.colour.xyz = getFromTrack3(particle.lifetime, emitterCore.affectorSetColourTrackTimes, emitterCore.affectorSetColourTrackValues);
     }
 @end
-    
-    if(emitterCore.useAlphaTrack) {
-        particle.colour.w = getFromTrack1(particle.lifetime, emitterCore.alphaTrackTimes, emitterCore.alphaTrackValues);
+@property(affector_set_alpha_track)
+    if(emitterCore.affectorSetAlphaTrackEnabled) {
+        particle.colour.w = getFromTrack1(particle.lifetime, emitterCore.affectorSetAlphaTrackTimes, emitterCore.affectorSetAlphaTrackValues);
     }
-    
-    if(emitterCore.useSizeTrack) {
-        particle.size = getFromTrack2(particle.lifetime, emitterCore.sizeTrackTimes, emitterCore.sizeTrackValues);
+@end
+@property(affector_set_size_track)
+    if(emitterCore.affectorSetSizeTrackEnabled) {
+        particle.size = getFromTrack2(particle.lifetime, emitterCore.affectorSetSizeTrackTimes, emitterCore.affectorSetSizeTrackValues);
         if(emitterCore.uniformSize) {
             particle.size.y = particle.size.x;
         }
     }
-    
-    if(emitterCore.useVelocityTrack) {
-        particle.dirVelocity = getFromTrack1(particle.lifetime, emitterCore.velocityTrackTimes, emitterCore.velocityTrackValues);
+@end
+@property(affector_set_velocity_track)
+    if(emitterCore.affectorSetVelocityTrackEnabled) {
+        particle.dirVelocity = getFromTrack1(particle.lifetime, emitterCore.affectorSetVelocityTrackTimes, emitterCore.affectorSetVelocityTrackValues);
     }
-    
+@end
 }

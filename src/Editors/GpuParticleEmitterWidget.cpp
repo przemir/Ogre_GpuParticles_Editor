@@ -21,9 +21,6 @@
 #include <QGroupBox>
 #include <ColourButton.h>
 #include <QTableView>
-#include <FloatTrackTableWidget.h>
-#include <Point2dTrackTableWidget.h>
-#include <ColourTrackTableWidget.h>
 #include <SpriteTrackTableWidget.h>
 #include <QPushButton>
 #include <OgreHlmsManager.h>
@@ -246,14 +243,6 @@ GpuParticleEmitterWidget::GpuParticleEmitterWidget(ParticleEditorData& _data)
     }
 
     {
-        grid->addWidget(new QLabel(tr("Gravity:")), row, 0, 1, 1, Qt::AlignRight);
-        mGravityWidget = new Point3dWidget();
-        mGravityWidget->setValue(dummy.mGravity, false);
-        connect(mGravityWidget, SIGNAL(valueChanged(float,float,float)), this, SLOT(emitterModified()));
-        grid->addWidget(mGravityWidget, row++, 1, 1, 1);
-    }
-
-    {
         grid->addWidget(new QLabel(tr("Direction:")), row, 0, 1, 1, Qt::AlignRight);
         mDirectionWidget = new Point3dWidget();
         mDirectionWidget->setValue(dummy.mDirection, false);
@@ -277,13 +266,6 @@ GpuParticleEmitterWidget::GpuParticleEmitterWidget(ParticleEditorData& _data)
         mDirectionVelocityRangeWidget->setValue(Geometry::Range(dummy.mDirectionVelocityMin, dummy.mDirectionVelocityMax), false);
         connect(mDirectionVelocityRangeWidget, SIGNAL(valueChanged(float,float)), this, SLOT(emitterModified()));
         grid->addWidget(mDirectionVelocityRangeWidget, row++, 1, 1, 1);
-    }
-
-    {
-        mUseDepthCollisionsCheckBox = new QCheckBox("Use depth collisions");
-        mUseDepthCollisionsCheckBox->setChecked(dummy.mUseDepthCollision);
-        connect(mUseDepthCollisionsCheckBox, SIGNAL(clicked(bool)), this, SLOT(emitterModified()));
-        grid->addWidget(mUseDepthCollisionsCheckBox, row++, 1, 1, 1);
     }
 
     {
@@ -317,118 +299,6 @@ GpuParticleEmitterWidget::GpuParticleEmitterWidget(ParticleEditorData& _data)
         mFaderEndEdit->setValue(dummy.mParticleFaderEndTime);
         connect(mFaderEndEdit, SIGNAL(valueChanged(double)), this, SLOT(emitterModified()));
         grid->addWidget(mFaderEndEdit, row++, 1, 1, 1);
-    }
-
-    {
-        mColourTrackGroup = new QGroupBox();
-        mColourTrackGroup->setCheckable(true);
-        mColourTrackGroup->setTitle("Colour track");
-        connect(mColourTrackGroup, SIGNAL(clicked(bool)), this, SLOT(emitterModified()));
-
-        {
-            QVBoxLayout* layout = new QVBoxLayout();
-
-//            mShowColourTrackButton = new QToolButton();
-//            mShowColourTrackButton->setArrowType(Qt::DownArrow);
-//            layout->addWidget(mShowColourTrackButton);
-
-            {
-                mColourTrackTableWidget = new ColourTrackTableWidget();
-                mColourTrackTableWidget->setMaxCount(GpuParticleEmitter::MaxTrackValues);
-                mColourTrackTableWidget->setMinimumHeight(MinimumTrackHeight);
-
-                connect(mColourTrackTableWidget, SIGNAL(dataModified()), this, SLOT(emitterModified()));
-                layout->addWidget(mColourTrackTableWidget);
-            }
-
-            mColourTrackGroup->setLayout(layout);
-        }
-
-        grid->addWidget(mColourTrackGroup, row++, 0, 1, 2);
-    }
-
-    {
-        mAlphaTrackGroup = new QGroupBox();
-        mAlphaTrackGroup->setCheckable(true);
-        mAlphaTrackGroup->setTitle("Alpha track");
-        connect(mAlphaTrackGroup, SIGNAL(clicked(bool)), this, SLOT(emitterModified()));
-
-        {
-            QVBoxLayout* layout = new QVBoxLayout();
-
-//            mShowAlphaTrackButton = new QToolButton();
-//            mShowAlphaTrackButton->setArrowType(Qt::DownArrow);
-//            layout->addWidget(mShowAlphaTrackButton);
-
-            {
-                mAlphaTrackTableWidget = new FloatTrackTableWidget(0.0f, 1.0f, 0.01f);
-                mAlphaTrackTableWidget->setMaxCount(GpuParticleEmitter::MaxTrackValues);
-                mAlphaTrackTableWidget->setMinimumHeight(MinimumTrackHeight);
-
-                connect(mAlphaTrackTableWidget, SIGNAL(dataModified()), this, SLOT(emitterModified()));
-                layout->addWidget(mAlphaTrackTableWidget);
-            }
-
-            mAlphaTrackGroup->setLayout(layout);
-        }
-
-        grid->addWidget(mAlphaTrackGroup, row++, 0, 1, 2);
-    }
-
-    {
-        mSizeTrackGroup = new QGroupBox();
-        mSizeTrackGroup->setCheckable(true);
-        mSizeTrackGroup->setTitle("Size track");
-        connect(mSizeTrackGroup, SIGNAL(clicked(bool)), this, SLOT(emitterModified()));
-
-        {
-            QVBoxLayout* layout = new QVBoxLayout();
-
-//            mShowSizeTrackButton = new QToolButton();
-//            mShowSizeTrackButton->setArrowType(Qt::DownArrow);
-//            layout->addWidget(mShowSizeTrackButton);
-
-            {
-                mSizeTrackTableWidget = new Point2dTrackTableWidget();
-                mSizeTrackTableWidget->setMaxCount(GpuParticleEmitter::MaxTrackValues);
-                mSizeTrackTableWidget->setMinimumHeight(MinimumTrackHeight);
-
-                connect(mSizeTrackTableWidget, SIGNAL(dataModified()), this, SLOT(emitterModified()));
-                layout->addWidget(mSizeTrackTableWidget);
-            }
-
-            mSizeTrackGroup->setLayout(layout);
-        }
-
-        grid->addWidget(mSizeTrackGroup, row++, 0, 1, 2);
-    }
-
-    {
-        mVelocityTrackGroup = new QGroupBox();
-        mVelocityTrackGroup->setCheckable(true);
-        mVelocityTrackGroup->setTitle("Velocity track");
-        connect(mVelocityTrackGroup, SIGNAL(clicked(bool)), this, SLOT(emitterModified()));
-
-        {
-            QVBoxLayout* layout = new QVBoxLayout();
-
-//            mShowVelocityTrackButton = new QToolButton();
-//            mShowVelocityTrackButton->setArrowType(Qt::DownArrow);
-//            layout->addWidget(mShowVelocityTrackButton);
-
-            {
-                mVelocityTrackTableWidget = new FloatTrackTableWidget(-1000.0f, 1000.0f, 0.01f);
-                mVelocityTrackTableWidget->setMaxCount(GpuParticleEmitter::MaxTrackValues);
-                mVelocityTrackTableWidget->setMinimumHeight(MinimumTrackHeight);
-
-                connect(mVelocityTrackTableWidget, SIGNAL(dataModified()), this, SLOT(emitterModified()));
-                layout->addWidget(mVelocityTrackTableWidget);
-            }
-
-            mVelocityTrackGroup->setLayout(layout);
-        }
-
-        grid->addWidget(mVelocityTrackGroup, row++, 0, 1, 2);
     }
 
     mainLayout->addLayout(grid);
@@ -547,9 +417,7 @@ void GpuParticleEmitterWidget::emitterToGui()
     { QSignalBlocker bl(mUniformSizeCheckBox); mUniformSizeCheckBox->setChecked(object->mUniformSize); }
     { QSignalBlocker bl(mSizeXRangeWidget); mSizeXRangeWidget->setValue(Geometry::Range(object->mSizeMin, object->mSizeMax), false); }
     { QSignalBlocker bl(mSizeYRangeWidget); mSizeYRangeWidget->setValue(Geometry::Range(object->mSizeYMin, object->mSizeYMax), false); }
-    { QSignalBlocker bl(mUseDepthCollisionsCheckBox); mUseDepthCollisionsCheckBox->setChecked(object->mUseDepthCollision); }
     { QSignalBlocker bl(mDirectionWidget); mDirectionWidget->setValue(object->mDirection, false); }
-    { QSignalBlocker bl(mGravityWidget); mGravityWidget->setValue(object->mGravity, false); }
     { QSignalBlocker bl(mParticleLifetimeRangeWidget); mParticleLifetimeRangeWidget->setValue(Geometry::Range(object->mParticleLifetimeMin, object->mParticleLifetimeMax), false); }
     { QSignalBlocker bl(mSpotAngleRangeWidget); mSpotAngleRangeWidget->setValue(Geometry::Range(object->mSpotAngleMin, object->mSpotAngleMax), false); }
     { QSignalBlocker bl(mDirectionVelocityRangeWidget); mDirectionVelocityRangeWidget->setValue(Geometry::Range(object->mDirectionVelocityMin, object->mDirectionVelocityMax), false); }
@@ -595,67 +463,6 @@ void GpuParticleEmitterWidget::emitterToGui()
     }
     { QSignalBlocker bl(mSpawnShapeDimensionsWidget); mSpawnShapeDimensionsWidget->setValue(object->mSpawnShapeDimensions, true); }
 
-
-    {
-        QSignalBlocker bl(mColourTrackGroup);
-        mColourTrackGroup->setChecked(object->mUseColourTrack);
-    }
-
-    {
-        QVector<QPair<float, Ogre::ColourValue> > values;
-
-        for(GpuParticleEmitter::Vector3Track::iterator it = object->mColourTrack.begin();
-            it != object->mColourTrack.end(); ++it) {
-
-            float time = it->first;
-            Ogre::ColourValue ogreColour(it->second.x, it->second.y, it->second.z, 1.0f);
-            values.push_back(qMakePair(time, ogreColour));
-        }
-
-        QSignalBlocker bl(mColourTrackTableWidget);
-        mColourTrackTableWidget->mTrackTableModel.setValues(values);
-    }
-
-    {
-        QSignalBlocker bl(mAlphaTrackGroup);
-        mAlphaTrackGroup->setChecked(object->mUseAlphaTrack);
-    }
-
-    {
-        QVector<QPair<float, float> > values;
-
-        for(GpuParticleEmitter::FloatTrack::iterator it = object->mAlphaTrack.begin();
-            it != object->mAlphaTrack.end(); ++it) {
-
-            float time = it->first;
-            float ogreAlpha = it->second;
-            values.push_back(qMakePair(time, ogreAlpha));
-        }
-
-        QSignalBlocker bl(mAlphaTrackTableWidget);
-        mAlphaTrackTableWidget->mTrackTableModel.setValues(values);
-    }
-
-    {
-        QSignalBlocker bl(mSizeTrackGroup);
-        mSizeTrackGroup->setChecked(object->mUseSizeTrack);
-    }
-
-    {
-        QVector<QPair<float, Ogre::Vector2> > values;
-
-        for(GpuParticleEmitter::Vector2Track::iterator it = object->mSizeTrack.begin();
-            it != object->mSizeTrack.end(); ++it) {
-
-            float time = it->first;
-            Ogre::Vector2 ogreSize(it->second.x, it->second.y);
-            values.push_back(qMakePair(time, ogreSize));
-        }
-
-        QSignalBlocker bl(mSizeTrackTableWidget);
-        mSizeTrackTableWidget->mTrackTableModel.setValues(values);
-    }
-
     {
         QVector<QPair<float, HlmsParticleDatablock::SpriteCoord> > values;
 
@@ -666,28 +473,6 @@ void GpuParticleEmitterWidget::emitterToGui()
         QSignalBlocker bl(mSpriteTrackTableWidget);
         mSpriteTrackTableWidget->mTrackTableModel.setValues(values);
     }
-
-    {
-        QSignalBlocker bl(mVelocityTrackGroup);
-        mVelocityTrackGroup->setChecked(object->mUseVelocityTrack);
-    }
-
-    {
-        QVector<QPair<float, float> > values;
-
-        for(GpuParticleEmitter::FloatTrack::iterator it = object->mVelocityTrack.begin();
-            it != object->mVelocityTrack.end(); ++it) {
-
-            float time = it->first;
-            float ogreVelocity = it->second;
-            values.push_back(qMakePair(time, ogreVelocity));
-        }
-
-        QSignalBlocker bl(mVelocityTrackTableWidget);
-        mVelocityTrackTableWidget->mTrackTableModel.setValues(values);
-    }
-
-
 
 }
 
@@ -755,9 +540,7 @@ void GpuParticleEmitterWidget::emitterModified()
     mEditedObject->mSizeMax = mSizeXRangeWidget->getValue().getMax();
     mEditedObject->mSizeYMin = mSizeYRangeWidget->getValue().getMin();
     mEditedObject->mSizeYMax = mSizeYRangeWidget->getValue().getMax();
-    mEditedObject->mUseDepthCollision = mUseDepthCollisionsCheckBox->isChecked();
     mEditedObject->mDirection = mDirectionWidget->getValue();
-    mEditedObject->mGravity = mGravityWidget->getValue();
     mEditedObject->mParticleLifetimeMin = mParticleLifetimeRangeWidget->getValue().getMin();
     mEditedObject->mParticleLifetimeMax = mParticleLifetimeRangeWidget->getValue().getMax();
     mEditedObject->mSpotAngleMin = mSpotAngleRangeWidget->getValue().getMin();
@@ -797,42 +580,6 @@ void GpuParticleEmitterWidget::emitterModified()
     }
     mEditedObject->mSpawnShapeDimensions = mSpawnShapeDimensionsWidget->getValue();
 
-    mEditedObject->mUseColourTrack = mColourTrackGroup->isChecked();
-
-    {
-        QVector<QPair<float, Ogre::ColourValue> > values = mColourTrackTableWidget->mTrackTableModel.getValues();
-        mEditedObject->mColourTrack.clear();
-        for (int i = 0; i < values.size(); ++i) {
-            float time = values[i].first;
-            Ogre::ColourValue ogreColour = values[i].second;
-            mEditedObject->mColourTrack[time] = Ogre::Vector3(ogreColour.r, ogreColour.g, ogreColour.b);
-        }
-    }
-
-    mEditedObject->mUseAlphaTrack = mAlphaTrackGroup->isChecked();
-
-    {
-        QVector<QPair<float, float> > values = mAlphaTrackTableWidget->mTrackTableModel.getValues();
-        mEditedObject->mAlphaTrack.clear();
-        for (int i = 0; i < values.size(); ++i) {
-            float time = values[i].first;
-            float ogreAlpha = values[i].second;
-            mEditedObject->mAlphaTrack[time] = ogreAlpha;
-        }
-    }
-
-    mEditedObject->mUseSizeTrack = mSizeTrackGroup->isChecked();
-
-    {
-        QVector<QPair<float, Ogre::Vector2> > values = mSizeTrackTableWidget->mTrackTableModel.getValues();
-        mEditedObject->mSizeTrack.clear();
-        for (int i = 0; i < values.size(); ++i) {
-            float time = values[i].first;
-            Ogre::Vector2 ogreSize = values[i].second;
-            mEditedObject->mSizeTrack[time] = Ogre::Vector2(ogreSize.x, ogreSize.y);
-        }
-    }
-
     {
         QVector<QPair<float, HlmsParticleDatablock::SpriteCoord> > values = mSpriteTrackTableWidget->mTrackTableModel.getValues();
         mEditedObject->mSpriteTimes.clear();
@@ -843,18 +590,6 @@ void GpuParticleEmitterWidget::emitterModified()
 
             mEditedObject->mSpriteTimes.push_back(time);
             mEditedObject->mSpriteFlipbookCoords.push_back(coord);
-        }
-    }
-
-    mEditedObject->mUseVelocityTrack = mVelocityTrackGroup->isChecked();
-
-    {
-        QVector<QPair<float, float> > values = mVelocityTrackTableWidget->mTrackTableModel.getValues();
-        mEditedObject->mVelocityTrack.clear();
-        for (int i = 0; i < values.size(); ++i) {
-            float time = values[i].first;
-            float ogreVelocity = values[i].second;
-            mEditedObject->mVelocityTrack[time] = ogreVelocity;
         }
     }
 
