@@ -461,19 +461,20 @@ MainWindow::~MainWindow()
 
 void MainWindow::createAffectorWidgets()
 {
-    createAffectorWidget(AFFECTOR_GLOBAL_GRAVITY, new GpuParticleGlobalGravityAffectorWidget());
-    createAffectorWidget(AFFECTOR_SET_COLOR_TRACK, new GpuParticleSetColourTrackAffectorWidget());
-    createAffectorWidget(AFFECTOR_SET_ALPHA_TRACK, new GpuParticleSetAlphaTrackAffectorWidget());
-    createAffectorWidget(AFFECTOR_SET_SIZE_TRACK, new GpuParticleSetSizeTrackAffectorWidget());
-    createAffectorWidget(AFFECTOR_SET_VELOCITY_TRACK, new GpuParticleSetVelocityTrackAffectorWidget());
-    createAffectorWidget(AFFECTOR_DEPTH_COLLISION, new GpuParticleDepthCollisionAffectorWidget());
+    createAffectorWidget(new GpuParticleGlobalGravityAffectorWidget());
+    createAffectorWidget(new GpuParticleSetColourTrackAffectorWidget());
+    createAffectorWidget(new GpuParticleSetAlphaTrackAffectorWidget());
+    createAffectorWidget(new GpuParticleSetSizeTrackAffectorWidget());
+    createAffectorWidget(new GpuParticleSetVelocityTrackAffectorWidget());
+    createAffectorWidget(new GpuParticleDepthCollisionAffectorWidget());
 }
 
-void MainWindow::createAffectorWidget(AffectorType type, GpuParticleAffectorWidget* widget)
+void MainWindow::createAffectorWidget(GpuParticleAffectorWidget* widget)
 {
-    Q_ASSERT(mAffectorWidgetMap.find(type) == mAffectorWidgetMap.end());
+    Ogre::String affectorPropertyName = widget->getAffectorPropertyName();
+    Q_ASSERT(mAffectorWidgetMap.find(affectorPropertyName) == mAffectorWidgetMap.end());
 
-    mAffectorWidgetMap[type] = widget;
+    mAffectorWidgetMap[affectorPropertyName] = widget;
     mEmitterStackedWidget->addWidget(widget);
     connect(widget, SIGNAL(affectorModified()), mRenderer, SLOT(updateEmitterCores()));
 }
@@ -539,7 +540,7 @@ void MainWindow::emitterChanged()
         currentStackedIndex = 1;
     }
     else {
-        AffectorWidgetMap::iterator it = mAffectorWidgetMap.find(affector->getType());
+        AffectorWidgetMap::iterator it = mAffectorWidgetMap.find(affector->getAffectorProperty());
         if(it != mAffectorWidgetMap.end()) {
             GpuParticleAffectorWidget* affectorWidget = it->second;
             currentStackedIndex = mEmitterStackedWidget->indexOf(affectorWidget);

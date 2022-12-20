@@ -114,7 +114,7 @@ struct Particle {
     float3 dir;
     float dirVelocity;
     
-    @insertpiece( custom_Particle_variables )
+    @insertpiece(insert_particle_affectors)
 };
 
 struct BucketGroup
@@ -153,34 +153,7 @@ struct EmitterCoreData {
     uint spawnShape;
     float3 spawnShapeDimensions;
     
-    @property(affector_global_gravity)
-    float3 affectorGlobalGravity;
-    @end
-    @property(affector_set_colour_track)
-    uint   affectorSetColourTrackEnabled;
-    float  affectorSetColourTrackTimes[8];
-    float3 affectorSetColourTrackValues[8];
-    @end
-    @property(affector_set_alpha_track)
-    uint  affectorSetAlphaTrackEnabled;
-    float affectorSetAlphaTrackTimes[8];
-    float affectorSetAlphaTrackValues[8];
-    @end
-    @property(affector_set_size_track)
-    uint   affectorSetSizeTrackEnabled;
-    float  affectorSetSizeTrackTimes[8];
-    float2 affectorSetSizeTrackValues[8];
-    @end
-    @property(affector_set_velocity_track)
-    uint  affectorSetVelocityTrackEnabled;
-    float affectorSetVelocityTrackTimes[8];
-    float affectorSetVelocityTrackValues[8];
-    @end
-    @property(affector_depth_collision)
-    uint affectorDepthCollisionEnabled;
-    @end
-    
-    @insertpiece( custom_EmitterCoreData_variables )
+    @insertpiece(insert_emitter_affectors)
 };
 static const uint BillboardType_Point = 0;
 static const uint BillboardType_OrientedSelf = 2;
@@ -207,4 +180,34 @@ struct ParticleWorld {
     uint randomIteration;
 };
 
+@end
+
+// Affectors: data to add to EmitterCoreData in insert_affectors piece
+// (which will be generated in code and create order).
+
+@piece(affector_global_gravity_emitter)
+    float3 affectorGlobalGravity;
+@end
+@piece(affector_set_colour_track_emitter)
+    uint   affectorSetColourTrackEnabled;
+    float  affectorSetColourTrackTimes[8];
+    float3 affectorSetColourTrackValues[8];
+@end
+@piece(affector_set_alpha_track_emitter)
+    uint  affectorSetAlphaTrackEnabled;
+    float affectorSetAlphaTrackTimes[8];
+    float affectorSetAlphaTrackValues[8];
+@end
+@piece(affector_set_size_track_emitter)
+    uint   affectorSetSizeTrackEnabled;
+    float  affectorSetSizeTrackTimes[8];
+    float2 affectorSetSizeTrackValues[8];
+@end
+@piece(affector_set_velocity_track_emitter)
+    uint  affectorSetVelocityTrackEnabled;
+    float affectorSetVelocityTrackTimes[8];
+    float affectorSetVelocityTrackValues[8];
+@end
+@piece(affector_depth_collision_emitter)
+    uint affectorDepthCollisionEnabled;
 @end

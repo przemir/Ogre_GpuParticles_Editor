@@ -47,8 +47,7 @@ private:
     QDockWidget* mParticleSystemDock = nullptr;
     QStackedWidget* mSelectedObjectStackedWidget = nullptr;
     ResizableStackedWidget* mEmitterStackedWidget = nullptr;
-//    QStackedWidget* mSelectedAffectorStackedWidget = nullptr;
-    typedef std::map<AffectorType, GpuParticleAffectorWidget*> AffectorWidgetMap;
+    typedef std::map<Ogre::String, GpuParticleAffectorWidget*> AffectorWidgetMap;
     AffectorWidgetMap mAffectorWidgetMap;
 
     ParticleProject* mParticleProject = nullptr;
@@ -59,7 +58,7 @@ private:
 private:
 
     void createAffectorWidgets();
-    void createAffectorWidget(AffectorType type, GpuParticleAffectorWidget* widget);
+    void createAffectorWidget(GpuParticleAffectorWidget* widget);
 
     /// Removes characters like / or \ from string, modifies input.
     /// It is only for file name, not for full path.

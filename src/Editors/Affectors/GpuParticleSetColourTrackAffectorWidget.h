@@ -8,13 +8,14 @@
 #ifndef GPUPARTICLESETCOLOURTRACKAFFECTORWIDGET_H
 #define GPUPARTICLESETCOLOURTRACKAFFECTORWIDGET_H
 
-#include "../GpuParticleAffectorWidget.h"
+#include "../GpuParticleAffectorWidgetTempl.h"
 
-class GpuParticleSetColourTrackAffector;
+#include <GpuParticles/Affectors/GpuParticleSetColourTrackAffector.h>
+
 class ColourTrackTableWidget;
 class QGroupBox;
 
-class GpuParticleSetColourTrackAffectorWidget : public GpuParticleAffectorWidget
+class GpuParticleSetColourTrackAffectorWidget : public GpuParticleAffectorWidgetTempl<GpuParticleSetColourTrackAffector>
 {
     Q_OBJECT
 public:
@@ -22,17 +23,13 @@ public:
 
     void createGui();
 
-    virtual void setEditedObject(GpuParticleAffector* affector) override;
-
 private:
-    void affectorToGui();
+    virtual void affectorToGui() override;
 
 private slots:
     void onAffectorModified();
 
 private:
-    GpuParticleSetColourTrackAffector* mEditedObject = nullptr;
-
     QGroupBox* mColourTrackGroup;
     ColourTrackTableWidget* mColourTrackTableWidget;
 };

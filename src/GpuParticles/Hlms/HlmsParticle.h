@@ -14,11 +14,10 @@
 
 class GpuParticleSystemWorld;
 class HlmsParticleDatablock;
+class GpuParticleAffector;
 
 class HlmsParticleListener : public Ogre::HlmsListener {
 
-    float mWindStrength{ 0.5 };
-    float mGlobalTime{ 0 };
     Ogre::Hlms* mHlms = nullptr;
     Ogre::Matrix4 mCameraVP;
     Ogre::Matrix4 mPrevCameraVP;    // Camera View * Projection from previous frame
@@ -33,13 +32,6 @@ public:
         mHlms = hlms;
     }
 
-    void setTime(float time) {
-        mGlobalTime = time;
-    }
-    void addTime(float time) {
-        mGlobalTime += time;
-    }
-
     virtual Ogre::uint32 getPassBufferSize(const Ogre::CompositorShadowNode* shadowNode,
                                            bool casterPass,
                                            bool dualParaboloid,
@@ -52,6 +44,13 @@ public:
                                      float* passBufferPtr);
     Ogre::Matrix4 getPrevCameraVP() const;
     Ogre::Vector2 getCameraProjectionAB() const;
+
+    static const Ogre::String InsertEmitterAffectors_PieceKey;
+    void generateEmitterCoreDataAffectorsCode(Ogre::String& resultPiece, const std::vector<const GpuParticleAffector*>& affectorList);
+
+    static const Ogre::String InsertParticleAffectors_PieceKey;
+    void generateParticleDataAffectorsCode(Ogre::String& resultPiece, const std::vector<const GpuParticleAffector*>& affectorList);
+
 };
 
 class HlmsParticle : public Ogre::HlmsUnlit

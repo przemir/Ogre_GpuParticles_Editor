@@ -17,7 +17,7 @@ GpuParticleEmitter::GpuParticleEmitter()
 
 GpuParticleEmitter::~GpuParticleEmitter()
 {
-    for(AffectorMap::const_iterator it = mAffectors.begin(); it != mAffectors.end(); ++it) {
+    for(AffectorByNameMap::const_iterator it = mAffectorByStringMap.begin(); it != mAffectorByStringMap.end(); ++it) {
         delete it->second;
     }
 }
@@ -54,7 +54,7 @@ GpuParticleEmitter::GpuParticleEmitter(const GpuParticleEmitter& other)
     , mDirectionVelocityMin(other.mDirectionVelocityMin)
     , mDirectionVelocityMax(other.mDirectionVelocityMax)
 {
-    for(AffectorMap::const_iterator it = other.mAffectors.begin(); it != other.mAffectors.end(); ++it) {
+    for(AffectorByNameMap::const_iterator it = other.mAffectorByStringMap.begin(); it != other.mAffectorByStringMap.end(); ++it) {
         addAffector(it->second->clone());
     }
 }
@@ -93,12 +93,14 @@ GpuParticleEmitter& GpuParticleEmitter::operator=(const GpuParticleEmitter& othe
     mDirectionVelocityMax = other.mDirectionVelocityMax;
 
     // delete old affectors
-    for(AffectorMap::const_iterator it = mAffectors.begin(); it != mAffectors.end(); ++it) {
+    for(AffectorByNameMap::const_iterator it = mAffectorByStringMap.begin(); it != mAffectorByStringMap.end(); ++it) {
         delete it->second;
     }
+    mAffectorByStringMap.clear();
+    mAffectorByIdStringMap.clear();
 
     // add new affectors
-    for(AffectorMap::const_iterator it = other.mAffectors.begin(); it != other.mAffectors.end(); ++it) {
+    for(AffectorByNameMap::const_iterator it = other.mAffectorByStringMap.begin(); it != other.mAffectorByStringMap.end(); ++it) {
         addAffector(it->second->clone());
     }
 
@@ -239,10 +241,19 @@ GpuParticleEmitter* GpuParticleEmitter::clone()
     return OGRE_NEW GpuParticleEmitter(*this);
 }
 
-const GpuParticleAffector* GpuParticleEmitter::getAffectorNoThrow(AffectorType type) const
+const GpuParticleAffector* GpuParticleEmitter::getAffectorNoThrow(const Ogre::String& affectorPropertyName) const
 {
-    AffectorMap::const_iterator it = mAffectors.find(type);
-    if(it != mAffectors.end()) {
+    AffectorByNameMap::const_iterator it = mAffectorByStringMap.find(affectorPropertyName);
+    if(it != mAffectorByStringMap.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+const GpuParticleAffector* GpuParticleEmitter::getAffectorByIdStringNoThrow(const Ogre::IdString& affectorPropertyNameHash) const
+{
+    AffectorByHashMap::const_iterator it = mAffectorByIdStringMap.find(affectorPropertyNameHash);
+    if(it != mAffectorByIdStringMap.end()) {
         return it->second;
     }
     return nullptr;
@@ -250,36 +261,51 @@ const GpuParticleAffector* GpuParticleEmitter::getAffectorNoThrow(AffectorType t
 
 void GpuParticleEmitter::addAffector(GpuParticleAffector* affector)
 {
-    if(getAffectorNoThrow(affector->getType())) {
+    if(getAffectorNoThrow(affector->getAffectorProperty())) {
         OGRE_EXCEPT( Ogre::Exception::ERR_DUPLICATE_ITEM,
-                     "emitter already contains affector of such type "
-                     + Ogre::StringConverter::toString((int)affector->getType())
-                     + ". Affector property '" + affector->getAffectorProperty() + "' collide with '"
-                     + mAffectors[affector->getType()]->getAffectorProperty() + "'.",
+                     "emitter already contains affector of such name '"
+                     + affector->getAffectorProperty() + "'.",
                      "GpuParticleEmitter::addAffector" );
         return;
     }
 
-    mAffectors[affector->getType()] = affector;
+    mAffectorByStringMap[affector->getAffectorProperty()] = affector;
+    mAffectorByIdStringMap[affector->getAffectorProperty()] = affector;
 }
 
-void GpuParticleEmitter::removeAndDestroyAffector(AffectorType type)
+void GpuParticleEmitter::removeAndDestroyAffector(const Ogre::String& affectorPropertyName)
 {
-    AffectorMap::const_iterator it = mAffectors.find(type);
-    if(it != mAffectors.end()) {
-        delete it->second;
-        mAffectors.erase(it);
+    AffectorByNameMap::const_iterator itByString = mAffectorByStringMap.find(affectorPropertyName);
+    if(itByString != mAffectorByStringMap.end()) {
+        delete itByString->second;
+        mAffectorByStringMap.erase(itByString);
     }
     else {
         OGRE_EXCEPT( Ogre::Exception::ERR_ITEM_NOT_FOUND,
-                     "emitter does not have affector of such type "
-                     + Ogre::StringConverter::toString((int)type) + ".",
+                     "emitter does not have affector of such name '" + affectorPropertyName + "'.",
+                     "GpuParticleEmitter::addAffector" );
+        return;
+    }
+
+    AffectorByHashMap::const_iterator itByIdString = mAffectorByIdStringMap.find(affectorPropertyName);
+    if(itByIdString != mAffectorByIdStringMap.end()) {
+//        delete itByIdString->second;
+        mAffectorByIdStringMap.erase(itByIdString);
+    }
+    else {
+        OGRE_EXCEPT( Ogre::Exception::ERR_ITEM_NOT_FOUND,
+                     "emitter does not have affector of such name '" + affectorPropertyName + "'.",
                      "GpuParticleEmitter::addAffector" );
         return;
     }
 }
 
-const std::map<AffectorType, GpuParticleAffector*>& GpuParticleEmitter::getAffectors() const
+const GpuParticleEmitter::AffectorByNameMap& GpuParticleEmitter::getAffectorByNameMap() const
 {
-    return mAffectors;
+    return mAffectorByStringMap;
+}
+
+const GpuParticleEmitter::AffectorByHashMap& GpuParticleEmitter::getAffectorByHashMap() const
+{
+    return mAffectorByIdStringMap;
 }

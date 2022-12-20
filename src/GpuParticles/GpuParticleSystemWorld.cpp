@@ -130,7 +130,6 @@ const int GpuParticleSystemWorld::ParticleWorldDataStructSize =
 
 
 const int GpuParticleSystemWorld::RenderableTypeId = 5002; // Magic number to identify this renderable insinde HlmsParticle
-//const int GpuParticleSystemWorld::RenderableCustomParamBucketSize = 5003; // Bucket size param (to not dynamic_cast renderable during HlmsParticle::calculateHashForPreCreate).
 
 
 GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
@@ -176,10 +175,12 @@ GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
     mObjectData.mWorldRadius[mObjectData.mIndex] = std::numeric_limits<Real>::max();
 
     // Just to validate AffectorType is used not more than once.
-    std::map<AffectorType, const GpuParticleAffector*> registeredAffectorMap;
+    std::map<Ogre::IdString, const GpuParticleAffector*> registeredAffectorMap;
+
+    // To sort affectors by name
+    std::map<Ogre::String, const GpuParticleAffector*> registeredAffectorNameMap;
 
     // GpuParticleSystemWorld takes ownerhip of afftector list.,
-    mRegisteredAffectorList.reserve(affectors.size());
     for (size_t i = 0; i < affectors.size(); ++i) {
         const GpuParticleAffector* affector = affectors[i];
 
@@ -189,20 +190,30 @@ GpuParticleSystemWorld::GpuParticleSystemWorld(Ogre::IdType id,
                          "GpuParticleSystemWorld::GpuParticleSystemWorld" );
             OGRE_DELETE affector;
         }
-        else if(registeredAffectorMap.find(affector->getType()) != registeredAffectorMap.end()) {
+        else if(registeredAffectorMap.find(affector->getAffectorProperty()) != registeredAffectorMap.end()) {
             OGRE_EXCEPT( Exception::ERR_DUPLICATE_ITEM,
-                         "There exists already GpuParticleAffector with the same slot "
-                         + Ogre::StringConverter::toString((int)affector->getType())
-                         + ". Affector property '" + affector->getAffectorProperty() + "' collide with '"
-                         + registeredAffectorMap[affector->getType()]->getAffectorProperty() + "'.",
+                         "There exists already GpuParticleAffector with the same property '"
+                         + affector->getAffectorProperty() + "'.",
                          "GpuParticleSystemWorld::GpuParticleSystemWorld" );
             OGRE_DELETE affector;
         }
         else {
-            registeredAffectorMap[affector->getType()] = affector;
-            mRegisteredAffectorList.push_back(affector);
+            registeredAffectorNameMap[affector->getAffectorProperty()] = affector;
+            registeredAffectorMap[affector->getAffectorProperty()] = affector;
         }
     }
+
+    // Add in sorted by name order.
+    mRegisteredAffectorList.reserve(affectors.size());
+    mRegisteredAffectorIdStringList.reserve(affectors.size());
+    for(std::map<Ogre::String, const GpuParticleAffector*>::const_iterator it = registeredAffectorNameMap.begin();
+        it != registeredAffectorNameMap.end(); ++it) {
+
+        const GpuParticleAffector* affector = it->second;
+        mRegisteredAffectorList.push_back(affector);
+        mRegisteredAffectorIdStringList.push_back(affector->getAffectorProperty());
+    }
+
 
     if(mUseDepthTexture) {
         if(!mCompositorWorkspace) {
@@ -1240,11 +1251,12 @@ void GpuParticleSystemWorld::uploadToGpuEmitterCores()
         *buffer++ = emitterCore->mSpawnShapeDimensions.y;
         *buffer++ = emitterCore->mSpawnShapeDimensions.z;
 
-        const GpuParticleEmitter::AffectorMap& affectorMap = emitterCore->getAffectors();
+        const GpuParticleEmitter::AffectorByHashMap& affectorMap = emitterCore->getAffectorByHashMap();
         for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
 
             const GpuParticleAffector* affector = mRegisteredAffectorList[i];
-            GpuParticleEmitter::AffectorMap::const_iterator itEmitterAffector = affectorMap.find(affector->getType());
+            const Ogre::IdString& idString = mRegisteredAffectorIdStringList[i];
+            GpuParticleEmitter::AffectorByHashMap::const_iterator itEmitterAffector = affectorMap.find(idString);
             if(itEmitterAffector != affectorMap.end()) {
                 affector = itEmitterAffector->second;
             }
@@ -1785,10 +1797,17 @@ HlmsComputeJob* GpuParticleSystemWorld::getParticleCreateComputeJob()
             job->setProperty(Ogre::IdString("initLocationInUpdate"), 1);
         }
 
-        for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
-            const GpuParticleAffector* affector = mRegisteredAffectorList[i];
-            job->setProperty(Ogre::IdString(affector->getAffectorProperty()), 1);
+        for (size_t i = 0; i < mRegisteredAffectorIdStringList.size(); ++i) {
+            job->setProperty(mRegisteredAffectorIdStringList[i], 1);
         }
+
+        Ogre::String affectorEmitterCode;
+        mHlmsParticleListener->generateEmitterCoreDataAffectorsCode(affectorEmitterCode, mRegisteredAffectorList);
+        job->setPiece(HlmsParticleListener::InsertEmitterAffectors_PieceKey, affectorEmitterCode);
+
+        Ogre::String affectorParticleCode;
+        mHlmsParticleListener->generateParticleDataAffectorsCode(affectorParticleCode, mRegisteredAffectorList);
+        job->setPiece(HlmsParticleListener::InsertParticleAffectors_PieceKey, affectorParticleCode);
     }
     return job;
 }
@@ -1827,10 +1846,17 @@ HlmsComputeJob* GpuParticleSystemWorld::getParticleUpdateComputeJob()
         //        job = hlmsCompute->findComputeJobNoThrow( "HlmsParticle/Update" );
         //    job->setProperty();
 
-        for (size_t i = 0; i < mRegisteredAffectorList.size(); ++i) {
-            const GpuParticleAffector* affector = mRegisteredAffectorList[i];
-            job->setProperty(Ogre::IdString(affector->getAffectorProperty()), 1);
+        for (size_t i = 0; i < mRegisteredAffectorIdStringList.size(); ++i) {
+            job->setProperty(mRegisteredAffectorIdStringList[i], 1);
         }
+
+        Ogre::String affectorEmitterCode;
+        mHlmsParticleListener->generateEmitterCoreDataAffectorsCode(affectorEmitterCode, mRegisteredAffectorList);
+        job->setPiece(HlmsParticleListener::InsertEmitterAffectors_PieceKey, affectorEmitterCode);
+
+        Ogre::String affectorParticleCode;
+        mHlmsParticleListener->generateParticleDataAffectorsCode(affectorParticleCode, mRegisteredAffectorList);
+        job->setPiece(HlmsParticleListener::InsertParticleAffectors_PieceKey, affectorParticleCode);
     }
     return job;
 }
@@ -1847,7 +1873,6 @@ GpuParticleSystemWorld::ParticleRenderable::ParticleRenderable(GpuParticleSystem
     //We use this magic value, to indicate this is a GpuParticleSystemWorld
     //and thus needs special shaders from HlmsParticle
     setCustomParameter( RenderableTypeId, Ogre::Vector4( 1.0f ) );
-//    setCustomParameter( RenderableCustomParamBucketSize, Ogre::Vector4 ((Ogre::Real)bucketSize) );
 
     // init vao
     {

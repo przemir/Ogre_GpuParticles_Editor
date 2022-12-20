@@ -13,22 +13,6 @@
 #include <OgreVector2.h>
 #include <OgreVector3.h>
 
-/// Affector data in shader struct have to be
-/// declared in the same order as enum below
-/// (though each affector is optional).
-enum AffectorType {
-    AFFECTOR_GLOBAL_GRAVITY,
-    AFFECTOR_SET_COLOR_TRACK,
-    AFFECTOR_SET_ALPHA_TRACK,
-    AFFECTOR_SET_SIZE_TRACK,
-    AFFECTOR_SET_VELOCITY_TRACK,
-    AFFECTOR_DEPTH_COLLISION,
-
-
-    ///
-    USER_AFFECTORS = 128
-};
-
 class GpuParticleAffector;
 
 class GpuParticleAffectorCommon

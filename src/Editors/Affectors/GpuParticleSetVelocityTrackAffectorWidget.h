@@ -8,13 +8,14 @@
 #ifndef GPUPARTICLESETVELOCITYTRACKAFFECTORWIDGET_H
 #define GPUPARTICLESETVELOCITYTRACKAFFECTORWIDGET_H
 
-#include "../GpuParticleAffectorWidget.h"
+#include "../GpuParticleAffectorWidgetTempl.h"
 
-class GpuParticleSetVelocityTrackAffector;
+#include <GpuParticles/Affectors/GpuParticleSetVelocityTrackAffector.h>
+
 class FloatTrackTableWidget;
 class QGroupBox;
 
-class GpuParticleSetVelocityTrackAffectorWidget : public GpuParticleAffectorWidget
+class GpuParticleSetVelocityTrackAffectorWidget : public GpuParticleAffectorWidgetTempl<GpuParticleSetVelocityTrackAffector>
 {
     Q_OBJECT
 public:
@@ -22,17 +23,13 @@ public:
 
     void createGui();
 
-    virtual void setEditedObject(GpuParticleAffector* affector) override;
-
 private:
-    void affectorToGui();
+    virtual void affectorToGui() override;
 
 private slots:
     void onAffectorModified();
 
 private:
-    GpuParticleSetVelocityTrackAffector* mEditedObject = nullptr;
-
     QGroupBox* mVelocityTrackGroup;
     FloatTrackTableWidget* mVelocityTrackTableWidget;
 };

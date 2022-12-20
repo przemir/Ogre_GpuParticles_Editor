@@ -11,3 +11,8 @@ GpuParticleAffectorWidget::GpuParticleAffectorWidget()
 {
 
 }
+
+GpuParticleAffectorWidget::~GpuParticleAffectorWidget()
+{
+
+}

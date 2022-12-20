@@ -8,13 +8,14 @@
 #ifndef GPUPARTICLESETALPHATRACKAFFECTORWIDGET_H
 #define GPUPARTICLESETALPHATRACKAFFECTORWIDGET_H
 
-#include "../GpuParticleAffectorWidget.h"
+#include "../GpuParticleAffectorWidgetTempl.h"
 
-class GpuParticleSetAlphaTrackAffector;
+#include <GpuParticles/Affectors/GpuParticleSetAlphaTrackAffector.h>
+
 class FloatTrackTableWidget;
 class QGroupBox;
 
-class GpuParticleSetAlphaTrackAffectorWidget : public GpuParticleAffectorWidget
+class GpuParticleSetAlphaTrackAffectorWidget : public GpuParticleAffectorWidgetTempl<GpuParticleSetAlphaTrackAffector>
 {
     Q_OBJECT
 public:
@@ -22,17 +23,13 @@ public:
 
     void createGui();
 
-    virtual void setEditedObject(GpuParticleAffector* affector) override;
-
 private:
-    void affectorToGui();
+    virtual void affectorToGui() override;
 
 private slots:
     void onAffectorModified();
 
 private:
-    GpuParticleSetAlphaTrackAffector* mEditedObject = nullptr;
-
     QGroupBox* mAlphaTrackGroup;
     FloatTrackTableWidget* mAlphaTrackTableWidget;
 };

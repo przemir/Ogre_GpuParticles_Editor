@@ -170,14 +170,18 @@ public:
     float mDirectionVelocityMin = 0.0f;
     float mDirectionVelocityMax = 1.0f;
 
-    typedef std::map<AffectorType, GpuParticleAffector*> AffectorMap;
-    const AffectorMap& getAffectors() const;
-    const GpuParticleAffector* getAffectorNoThrow(AffectorType type) const;
+    typedef std::map<Ogre::String, GpuParticleAffector*> AffectorByNameMap;
+    typedef std::map<Ogre::IdString, GpuParticleAffector*> AffectorByHashMap;
+    const AffectorByNameMap& getAffectorByNameMap() const;
+    const AffectorByHashMap& getAffectorByHashMap() const;
+    const GpuParticleAffector* getAffectorNoThrow(const Ogre::String& affectorPropertyName) const;
+    const GpuParticleAffector* getAffectorByIdStringNoThrow(const Ogre::IdString& affectorPropertyNameHash) const;
     void addAffector(GpuParticleAffector* affector);
-    void removeAndDestroyAffector(AffectorType type);
+    void removeAndDestroyAffector(const Ogre::String& affectorPropertyName);
 
 private:
-    AffectorMap mAffectors;
+    AffectorByNameMap mAffectorByStringMap;
+    AffectorByHashMap mAffectorByIdStringMap;
 };
 
 #endif

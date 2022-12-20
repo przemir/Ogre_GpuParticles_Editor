@@ -92,13 +92,14 @@ DEPENDPATH  += src/ \
 VPATH = src/
 
 SOURCES += main.cpp \
+    src/Editors/GpuParticleAffectorWidget.cpp \
+    src/Editors/GpuParticleAffectorWidgetTempl.cpp \
     src/Editors/Affectors/GpuParticleDepthCollisionAffectorWidget.cpp \
     src/Editors/Affectors/GpuParticleGlobalGravityAffectorWidget.cpp \
     src/Editors/Affectors/GpuParticleSetAlphaTrackAffectorWidget.cpp \
     src/Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.cpp \
     src/Editors/Affectors/GpuParticleSetSizeTrackAffectorWidget.cpp \
     src/Editors/Affectors/GpuParticleSetVelocityTrackAffectorWidget.cpp \
-    src/Editors/GpuParticleAffectorWidget.cpp \
     src/GpuParticles/Affectors/GpuParticleDepthCollisionAffector.cpp \
     src/GpuParticles/Affectors/GpuParticleGlobalGravityAffector.cpp \
     src/GpuParticles/Affectors/GpuParticleSetAlphaTrackAffector.cpp \
@@ -157,13 +158,14 @@ SOURCES += main.cpp \
     src/Widgets/Vector2TrackTableWidget.cpp
 
 HEADERS  += \
+    src/Editors/GpuParticleAffectorWidget.h \
+    src/Editors/GpuParticleAffectorWidgetTempl.h \
     src/Editors/Affectors/GpuParticleDepthCollisionAffectorWidget.h \
     src/Editors/Affectors/GpuParticleGlobalGravityAffectorWidget.h \
     src/Editors/Affectors/GpuParticleSetAlphaTrackAffectorWidget.h \
     src/Editors/Affectors/GpuParticleSetColourTrackAffectorWidget.h \
     src/Editors/Affectors/GpuParticleSetSizeTrackAffectorWidget.h \
     src/Editors/Affectors/GpuParticleSetVelocityTrackAffectorWidget.h \
-    src/Editors/GpuParticleAffectorWidget.h \
     src/GpuParticles/Affectors/GpuParticleDepthCollisionAffector.h \
     src/GpuParticles/Affectors/GpuParticleGlobalGravityAffector.h \
     src/GpuParticles/Affectors/GpuParticleSetAlphaTrackAffector.h \

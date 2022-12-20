@@ -154,13 +154,12 @@ void OgreRenderer::createScene()
         HlmsParticleListener* hlmsParticleListener = hlmsParticle->getParticleListener();
 
         std::vector<GpuParticleAffector*> affectors;
-
         GpuParticleSystemResourceManager& gpuParticleSystemResourceManager = GpuParticleSystemResourceManager::getSingleton();
-        const GpuParticleSystemResourceManager::AffectorByTypeMap& registeredAffectors = gpuParticleSystemResourceManager.getAffectorByTypeMap();
-        for(GpuParticleSystemResourceManager::AffectorByTypeMap::const_iterator it = registeredAffectors.begin();
+        const GpuParticleSystemResourceManager::AffectorByIdStringMap& registeredAffectors = gpuParticleSystemResourceManager.getAffectorByPropertyMap();
+        for(GpuParticleSystemResourceManager::AffectorByIdStringMap::const_iterator it = registeredAffectors.begin();
             it != registeredAffectors.end(); ++it) {
 
-            affectors.push_back(it->second->clone());
+             affectors.push_back(it->second->clone());
         }
 
         bool useDepthTexture = true;

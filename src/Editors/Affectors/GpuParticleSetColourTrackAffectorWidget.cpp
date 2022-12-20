@@ -48,15 +48,6 @@ void GpuParticleSetColourTrackAffectorWidget::createGui()
     setLayout(grid);
 }
 
-void GpuParticleSetColourTrackAffectorWidget::setEditedObject(GpuParticleAffector* affector)
-{
-    mEditedObject = dynamic_cast<GpuParticleSetColourTrackAffector*>(affector);
-
-    setEnabled(mEditedObject);
-
-    affectorToGui();
-}
-
 void GpuParticleSetColourTrackAffectorWidget::affectorToGui()
 {
     {

@@ -46,8 +46,6 @@ public:
     };
 
     typedef std::map<Ogre::IdString, GpuParticleSystemEntry> GpuParticleSystemMap;
-
-    typedef std::map<AffectorType, GpuParticleAffector*> AffectorByTypeMap;
     typedef std::map<Ogre::IdString, GpuParticleAffector*> AffectorByIdStringMap;
 
 public:
@@ -72,11 +70,9 @@ public:
     void registerAffector(GpuParticleAffector* affector);
     const GpuParticleAffector* getAffectorByProperty(Ogre::IdString affectorProperty);
     const AffectorByIdStringMap& getAffectorByPropertyMap() const { return mAffectorByIdStringMap; }
-    const AffectorByTypeMap& getAffectorByTypeMap() const { return mAffectorByTypeMap; }
 
 private:
     GpuParticleSystemMap mGpuParticleSystemMap;
-    AffectorByTypeMap mAffectorByTypeMap;
     AffectorByIdStringMap mAffectorByIdStringMap;
 };
 

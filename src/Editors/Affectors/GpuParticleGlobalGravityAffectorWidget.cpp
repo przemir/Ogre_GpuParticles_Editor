@@ -36,15 +36,6 @@ void GpuParticleGlobalGravityAffectorWidget::createGui()
     setLayout(grid);
 }
 
-void GpuParticleGlobalGravityAffectorWidget::setEditedObject(GpuParticleAffector* affector)
-{
-    mEditedObject = dynamic_cast<GpuParticleGlobalGravityAffector*>(affector);
-
-    setEnabled(mEditedObject);
-
-    affectorToGui();
-}
-
 void GpuParticleGlobalGravityAffectorWidget::affectorToGui()
 {
     { QSignalBlocker bl(mGravityWidget); mGravityWidget->setValue(mEditedObject->mGravity, false); }

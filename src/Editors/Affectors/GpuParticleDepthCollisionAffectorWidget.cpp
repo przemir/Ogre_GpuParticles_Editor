@@ -37,15 +37,6 @@ void GpuParticleDepthCollisionAffectorWidget::createGui()
     setLayout(grid);
 }
 
-void GpuParticleDepthCollisionAffectorWidget::setEditedObject(GpuParticleAffector* affector)
-{
-    mEditedObject = dynamic_cast<GpuParticleDepthCollisionAffector*>(affector);
-
-    setEnabled(mEditedObject);
-
-    affectorToGui();
-}
-
 void GpuParticleDepthCollisionAffectorWidget::affectorToGui()
 {
     { QSignalBlocker bl(mEnabledCheckBox); mEnabledCheckBox->setChecked(mEditedObject->mEnabled); }

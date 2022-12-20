@@ -18,8 +18,6 @@ public:
     GpuParticleSetSizeTrackAffector();
     virtual GpuParticleAffector* clone() const override { return OGRE_NEW GpuParticleSetSizeTrackAffector(*this); }
 
-    virtual AffectorType getType() const override { return AFFECTOR_SET_SIZE_TRACK; }
-
     virtual Ogre::uint32 getAffectorParticleBufferSize() const override { return 0; }
 
     virtual Ogre::uint32 getAffectorEmitterBufferSize() const override;

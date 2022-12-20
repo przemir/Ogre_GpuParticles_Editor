@@ -33,10 +33,9 @@ GpuParticleSystemResourceManager::~GpuParticleSystemResourceManager()
     }
 
     // destroy affectors
-    for(AffectorByTypeMap::const_iterator it = mAffectorByTypeMap.begin(); it != mAffectorByTypeMap.end(); ++it) {
+    for(AffectorByIdStringMap::const_iterator it = mAffectorByIdStringMap.begin(); it != mAffectorByIdStringMap.end(); ++it) {
         delete it->second;
     }
-    mAffectorByTypeMap.clear();
     mAffectorByIdStringMap.clear();
 }
 
@@ -151,16 +150,6 @@ void GpuParticleSystemResourceManager::registerAffector(GpuParticleAffector* aff
         return;
     }
 
-    AffectorByTypeMap::iterator itByType = mAffectorByTypeMap.find(affector->getType());
-    if(itByType != mAffectorByTypeMap.end()) {
-
-        OGRE_EXCEPT( Ogre::Exception::ERR_DUPLICATE_ITEM, "A particle affector with type " +
-                     Ogre::StringConverter::toString((int)affector->getType()) + " already exists.",
-                     "GpuParticleSystemResourceManager::registerAffector" );
-        return;
-    }
-
-    mAffectorByTypeMap[affector->getType()] = affector;
     mAffectorByIdStringMap[affector->getAffectorProperty()] = affector;
 }
 

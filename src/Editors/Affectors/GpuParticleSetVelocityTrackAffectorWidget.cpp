@@ -48,15 +48,6 @@ void GpuParticleSetVelocityTrackAffectorWidget::createGui()
     setLayout(grid);
 }
 
-void GpuParticleSetVelocityTrackAffectorWidget::setEditedObject(GpuParticleAffector* affector)
-{
-    mEditedObject = dynamic_cast<GpuParticleSetVelocityTrackAffector*>(affector);
-
-    setEnabled(mEditedObject);
-
-    affectorToGui();
-}
-
 void GpuParticleSetVelocityTrackAffectorWidget::affectorToGui()
 {
     {

@@ -36,9 +36,6 @@ public:
     virtual ~GpuParticleAffector();
     virtual GpuParticleAffector* clone() const = 0;
 
-    /// Id to have order in uploading data to gpu.
-    virtual AffectorType getType() const = 0;
-
     /// Additional space per particle (every particle hold by GpuParticleSystemWorld).
     virtual Ogre::uint32 getAffectorParticleBufferSize() const { return 0; }
 

@@ -149,7 +149,7 @@ public:
 
     /// @param affectors - affectors handled by this GpuParticleSystemWorld.
     ///                    Also contains default values in case emitterCore have not have
-    ///                    this affector. Takes ownership.
+    ///                    this affector. Takes ownership. Sorted inside by property names.
     /// @param useDepthTexture - depth texture is used for particle collisions.
     /// @param compositorWorkspace - only needed when useDepthTexture == true
     /// @param depthTextureCompositorNode - only needed when useDepthTexture == true
@@ -285,6 +285,9 @@ private:
     GpuParticleEmitterMap mRegisteredEmitterCoresSet;
 
     std::vector<const GpuParticleAffector*> mRegisteredAffectorList;
+    /// Contains 'Ogre::IdString(mRegisteredAffectorList[k]->getAffectorProperty())' for
+    /// fast search inside GpuParticleEmitter.
+    std::vector<Ogre::IdString> mRegisteredAffectorIdStringList;
 
     /// Bucket indexes stack.
     std::vector<Ogre::uint32> mAvailableBucketsStack;
@@ -316,7 +319,6 @@ public:
     virtual const Ogre::String& getMovableType(void) const;
 
     static const int RenderableTypeId;
-//    static const int RenderableCustomParamBucketSize;
     static const int EntryBucketDataStructSize;
     static const int EmitterInstanceDataStructSize;
     static const int ParticleWorldDataStructSize;

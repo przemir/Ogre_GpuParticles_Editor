@@ -8,12 +8,13 @@
 #ifndef GPUPARTICLEDEPTHCOLLISIONAFFECTORWIDGET_H
 #define GPUPARTICLEDEPTHCOLLISIONAFFECTORWIDGET_H
 
-#include "../GpuParticleAffectorWidget.h"
+#include "../GpuParticleAffectorWidgetTempl.h"
 
-class GpuParticleDepthCollisionAffector;
+#include <GpuParticles/Affectors/GpuParticleDepthCollisionAffector.h>
+
 class QCheckBox;
 
-class GpuParticleDepthCollisionAffectorWidget : public GpuParticleAffectorWidget
+class GpuParticleDepthCollisionAffectorWidget : public GpuParticleAffectorWidgetTempl<GpuParticleDepthCollisionAffector>
 {
     Q_OBJECT
 public:
@@ -21,17 +22,13 @@ public:
 
     void createGui();
 
-    virtual void setEditedObject(GpuParticleAffector* affector) override;
-
 private:
-    void affectorToGui();
+    virtual void affectorToGui() override;
 
 private slots:
     void onAffectorModified();
 
 private:
-    GpuParticleDepthCollisionAffector* mEditedObject = nullptr;
-
     QCheckBox* mEnabledCheckBox;
 };
 

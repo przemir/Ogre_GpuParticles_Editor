@@ -496,8 +496,8 @@ void GpuParticleSystemJsonManager::saveGpuParticleEmitter(const GpuParticleEmitt
     outString += ",";
     outString += "\n\t\t\t\t\t" + quote("affectors") + ":";
     outString += "\n\t\t\t\t\t{";
-    const GpuParticleEmitter::AffectorMap& emitterAffectorMap = gpuParticleEmitter->getAffectors();
-    for (GpuParticleEmitter::AffectorMap::const_iterator it = emitterAffectorMap.begin();
+    const GpuParticleEmitter::AffectorByNameMap& emitterAffectorMap = gpuParticleEmitter->getAffectorByNameMap();
+    for (GpuParticleEmitter::AffectorByNameMap::const_iterator it = emitterAffectorMap.begin();
          it != emitterAffectorMap.end(); ++it) {
 
         if(it != emitterAffectorMap.begin()) {

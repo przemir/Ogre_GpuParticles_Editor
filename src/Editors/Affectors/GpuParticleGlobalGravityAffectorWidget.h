@@ -8,12 +8,13 @@
 #ifndef GPUPARTICLEGLOBALGRAVITYAFFECTORWIDGET_H
 #define GPUPARTICLEGLOBALGRAVITYAFFECTORWIDGET_H
 
-#include "../GpuParticleAffectorWidget.h"
+#include "../GpuParticleAffectorWidgetTempl.h"
 
-class GpuParticleGlobalGravityAffector;
+#include <GpuParticles/Affectors/GpuParticleGlobalGravityAffector.h>
+
 class Point3dWidget;
 
-class GpuParticleGlobalGravityAffectorWidget : public GpuParticleAffectorWidget
+class GpuParticleGlobalGravityAffectorWidget : public GpuParticleAffectorWidgetTempl<GpuParticleGlobalGravityAffector>
 {
     Q_OBJECT
 public:
@@ -21,17 +22,13 @@ public:
 
     void createGui();
 
-    virtual void setEditedObject(GpuParticleAffector* affector) override;
-
 private:
-    void affectorToGui();
+    virtual void affectorToGui() override;
 
 private slots:
     void onAffectorModified();
 
 private:
-    GpuParticleGlobalGravityAffector* mEditedObject = nullptr;
-
     Point3dWidget* mGravityWidget;
 };
 

@@ -48,15 +48,6 @@ void GpuParticleSetAlphaTrackAffectorWidget::createGui()
     setLayout(grid);
 }
 
-void GpuParticleSetAlphaTrackAffectorWidget::setEditedObject(GpuParticleAffector* affector)
-{
-    mEditedObject = dynamic_cast<GpuParticleSetAlphaTrackAffector*>(affector);
-
-    setEnabled(mEditedObject);
-
-    affectorToGui();
-}
-
 void GpuParticleSetAlphaTrackAffectorWidget::affectorToGui()
 {
     {

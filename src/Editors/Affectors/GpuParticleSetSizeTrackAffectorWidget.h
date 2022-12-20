@@ -8,13 +8,14 @@
 #ifndef GPUPARTICLESETSIZETRACKAFFECTORWIDGET_H
 #define GPUPARTICLESETSIZETRACKAFFECTORWIDGET_H
 
-#include "../GpuParticleAffectorWidget.h"
+#include "../GpuParticleAffectorWidgetTempl.h"
 
-class GpuParticleSetSizeTrackAffector;
+#include <GpuParticles/Affectors/GpuParticleSetSizeTrackAffector.h>
+
 class Vector2TrackTableWidget;
 class QGroupBox;
 
-class GpuParticleSetSizeTrackAffectorWidget : public GpuParticleAffectorWidget
+class GpuParticleSetSizeTrackAffectorWidget : public GpuParticleAffectorWidgetTempl<GpuParticleSetSizeTrackAffector>
 {
     Q_OBJECT
 public:
@@ -22,17 +23,13 @@ public:
 
     void createGui();
 
-    virtual void setEditedObject(GpuParticleAffector* affector) override;
-
 private:
-    void affectorToGui();
+    virtual void affectorToGui() override;
 
 private slots:
     void onAffectorModified();
 
 private:
-    GpuParticleSetSizeTrackAffector* mEditedObject = nullptr;
-
     QGroupBox* mSizeTrackGroup;
     Vector2TrackTableWidget* mSizeTrackTableWidget;
 };
