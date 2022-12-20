@@ -38,6 +38,8 @@ StructuredBuffer<ParticleWorld> particleWorld : register(t3);
 uniform uint BucketSize;
 uniform uint MaxParticles;
 
+@insertpiece( custom_ComputeParticleWorldCreate_declarations)
+
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
 (

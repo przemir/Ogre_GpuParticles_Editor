@@ -53,6 +53,7 @@ float3 getReflectionVec(float3 dir, float3 n)
     return dir - 2.0 * dot(dir, n) * n;
 }
 
+@insertpiece( custom_ComputeParticleWorldUpdate_declarations)
 
 [numthreads(@value( threads_per_group_x ), @value( threads_per_group_y ), @value( threads_per_group_z ))]
 void main
