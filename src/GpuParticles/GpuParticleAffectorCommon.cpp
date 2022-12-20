@@ -5,7 +5,7 @@
  *
  */
 
-#include "GpuParticleAffectorCommon.h"
+#include <GpuParticles/GpuParticleAffectorCommon.h>
 
 void GpuParticleAffectorCommon::uploadFloatTrack(float*& buffer, const std::map<float, float>& track, float defaultStartValue)
 {

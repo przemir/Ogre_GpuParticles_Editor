@@ -5,7 +5,7 @@
  *
  */
 
-#include "GpuParticleGlobalGravityAffector.h"
+#include <GpuParticles/Affectors/GpuParticleGlobalGravityAffector.h>
 #include <GpuParticles/GpuParticleSystemJsonManager.h>
 #if !OGRE_NO_JSON
 #include "rapidjson/document.h"

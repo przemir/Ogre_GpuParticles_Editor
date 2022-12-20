@@ -5,7 +5,7 @@
  *
  */
 
-#include "GpuParticleSetAlphaTrackAffector.h"
+#include <GpuParticles/Affectors/GpuParticleSetAlphaTrackAffector.h>
 #include <GpuParticles/GpuParticleSystemJsonManager.h>
 #if !OGRE_NO_JSON
 #include "rapidjson/document.h"

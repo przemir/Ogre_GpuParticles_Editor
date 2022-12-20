@@ -28,7 +28,7 @@
 
 #include <OgreLogManager.h>
 
-#include "GpuParticleAffectorCommon.h"
+#include <GpuParticles/GpuParticleAffectorCommon.h>
 
 //#include <Other/DebugVariable.h>
 

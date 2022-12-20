@@ -5,7 +5,7 @@
  *
  */
 
-#include "GpuParticleAffector.h"
+#include <GpuParticles/GpuParticleAffector.h>
 
 GpuParticleAffector::GpuParticleAffector()
 {

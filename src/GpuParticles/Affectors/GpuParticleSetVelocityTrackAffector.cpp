@@ -5,7 +5,7 @@
  *
  */
 
-#include "GpuParticleSetVelocityTrackAffector.h"
+#include <GpuParticles/Affectors/GpuParticleSetVelocityTrackAffector.h>
 #include <GpuParticles/GpuParticleSystemJsonManager.h>
 #if !OGRE_NO_JSON
 #include "rapidjson/document.h"
