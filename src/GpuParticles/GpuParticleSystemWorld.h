@@ -138,11 +138,17 @@ public:
     };
 
     struct BucketGroupData;
-    typedef std::vector<EmitterInstance> Emitters;
 
-    typedef std::vector<ParticleRenderable*> ParticleRenderableList;
+    /// Emitter list. It will be iterated each frame (by calling processTime method).
+    typedef std::vector<EmitterInstance> EmitterInstanceList;
+    EmitterInstanceList mEmitterInstances;
+
+    /// Multimap to search for elements.
+    typedef std::multimap<Ogre::uint64, int> EmitterInstanceIdToListIndex;
+    std::multimap<Ogre::uint64, int> mEmitterInstanceIdToListIndex;
 
     /// ParticleRenderable is per datablock.
+    typedef std::vector<ParticleRenderable*> ParticleRenderableList;
     ParticleRenderableList mParticleRenderables;
 
 public:
@@ -274,8 +280,6 @@ private:
     Ogre::ReadOnlyBufferPacked* mParticleWorldBufferAsReadOnly = nullptr;
     float* mCpuParticleWorldBuffer = nullptr;
 
-    std::vector<EmitterInstance> mEmitterInstances;
-
     /// Emitter cores must be registered as they will be send to buffer.
     std::vector<const GpuParticleEmitter*> mRegisteredEmitterCores;
 
@@ -379,10 +383,11 @@ private:
     void updateInstancesToCores();
     void destroyParticleRenderable(const Ogre::String& datablockName);
 
-    /// Removes i-th element then swaps last element to fill the gap.
-    void destroyEmitterInstance(int instanceIndex);
     /// Can assert if not enough buckets.
     void createEmitterInstance(const GpuParticleEmitter* gpuParticleEmitterCore, const Ogre::Matrix4& matParent, Ogre::Node* parentNode, Ogre::uint64 idCounter);
+
+    /// Removes i-th element then swaps last element to fill the gap.
+    void destroyEmitterInstance(int instanceIndex);
 
     ParticleRenderable* getRenderableForEmitterCore(const GpuParticleEmitter* emitterCore) const;
 
@@ -390,6 +395,8 @@ private:
 
     /// Uploads buckets offsets and primitive range for renderable objects.
     void prepareForRender();
+
+    EmitterInstanceIdToListIndex::iterator findEmitterInstanceIt(int listIndex);
 
     Ogre::HlmsComputeJob* getParticleCreateComputeJob();
     Ogre::HlmsComputeJob* getParticleUpdateComputeJob();

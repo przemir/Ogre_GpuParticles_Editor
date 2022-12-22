@@ -404,16 +404,23 @@ bool GpuParticleSystemWorld::canAdd(const GpuParticleSystem* particleSystem) con
 
 void GpuParticleSystemWorld::stop(uint64 instanceId, bool destroyAllParticles)
 {
-    for (int i = mEmitterInstances.size()-1; i >= 0; --i) {
-        if(mEmitterInstances[i].mId == instanceId) {
-            EmitterInstance& emitterInstance = mEmitterInstances[i];
-            emitterInstance.mRun = false;
-            if(destroyAllParticles || emitterInstance.mParticleCount + emitterInstance.mParticleAddedThisFrameCount == 0) {
-                destroyEmitterInstance(i);
-            }
-            else {
-                freeUnusedBuckets(emitterInstance);
-            }
+    std::vector<int> indexesToRemove;
+
+    std::pair<EmitterInstanceIdToListIndex::iterator, EmitterInstanceIdToListIndex::iterator> idItRange
+            = mEmitterInstanceIdToListIndex.equal_range(instanceId);
+    for(EmitterInstanceIdToListIndex::iterator it = idItRange.first; it != idItRange.second; ++it) {
+        indexesToRemove.push_back(it->second);
+    }
+
+    for (size_t i = 0; i < indexesToRemove.size(); ++i) {
+        size_t instanceListIndex = indexesToRemove[i];
+        EmitterInstance& emitterInstance = mEmitterInstances[instanceListIndex];
+        emitterInstance.mRun = false;
+        if(destroyAllParticles || emitterInstance.mParticleCount + emitterInstance.mParticleAddedThisFrameCount == 0) {
+            destroyEmitterInstance(instanceListIndex);
+        }
+        else {
+            freeUnusedBuckets(emitterInstance);
         }
     }
 }
@@ -424,6 +431,7 @@ void GpuParticleSystemWorld::stopAll()
         freeBuckets(mEmitterInstances[i]);
     }
     mEmitterInstances.clear();
+    mEmitterInstanceIdToListIndex.clear();
 }
 
 void GpuParticleSystemWorld::init(uint32 maxParticles,
@@ -528,6 +536,23 @@ void GpuParticleSystemWorld::createEmitterInstance(const GpuParticleEmitter* gpu
     }
 
     emitter.mId = idCounter;
+
+    mEmitterInstanceIdToListIndex.insert(std::make_pair(emitter.mId, mEmitterInstances.size()-1));
+}
+
+void GpuParticleSystemWorld::destroyEmitterInstance(int instanceIndex)
+{
+    freeBuckets(mEmitterInstances[instanceIndex]);
+
+    EmitterInstanceIdToListIndex::iterator itToRemove = findEmitterInstanceIt(instanceIndex);
+    EmitterInstanceIdToListIndex::iterator itToSwap = findEmitterInstanceIt(mEmitterInstances.size()-1);
+
+    mEmitterInstances[instanceIndex] = mEmitterInstances[mEmitterInstances.size()-1];
+    mEmitterInstances.pop_back();
+
+    // First set value (if itToRemove == itToSwap then this order will work as well).
+    itToRemove->second = itToSwap->second;
+    mEmitterInstanceIdToListIndex.erase(itToSwap);
 }
 
 Ogre::uint64 GpuParticleSystemWorld::start(const GpuParticleEmitter* emitterCore, Ogre::Node* parentNode, const Ogre::Vector3& parentPos, const Ogre::Quaternion& parentRot)
@@ -1704,15 +1729,6 @@ void GpuParticleSystemWorld::destroyParticleRenderable(const String& datablockNa
     delete particleRenderableToDel;
 }
 
-void GpuParticleSystemWorld::destroyEmitterInstance(int instanceIndex)
-{
-    freeBuckets(mEmitterInstances[instanceIndex]);
-//        mEmitterInstances.erase(mEmitterInstances.begin()+instanceIndex);
-
-    mEmitterInstances[instanceIndex] = mEmitterInstances[mEmitterInstances.size()-1];
-    mEmitterInstances.pop_back();
-}
-
 GpuParticleSystemWorld::ParticleRenderable* GpuParticleSystemWorld::getRenderableForEmitterCore(const GpuParticleEmitter* emitterCore) const
 {
     for (size_t i = 0; i < mParticleRenderables.size(); ++i) {
@@ -1777,6 +1793,19 @@ void GpuParticleSystemWorld::prepareForRender()
         mEntryBucketBuffer->upload( mCpuEntryBucketBuffer, 0u, mEntryBucketBuffer->getNumElements() );
     }
 
+}
+
+GpuParticleSystemWorld::EmitterInstanceIdToListIndex::iterator GpuParticleSystemWorld::findEmitterInstanceIt(int listIndex)
+{
+    Ogre::uint64 id = mEmitterInstances[listIndex].mId;
+    std::pair<EmitterInstanceIdToListIndex::iterator, EmitterInstanceIdToListIndex::iterator> idItRange
+            = mEmitterInstanceIdToListIndex.equal_range(id);
+    for(EmitterInstanceIdToListIndex::iterator it = idItRange.first; it != idItRange.second; ++it) {
+        if(it->second == listIndex) {
+            return it;
+        }
+    }
+    return mEmitterInstanceIdToListIndex.end();
 }
 
 HlmsComputeJob* GpuParticleSystemWorld::getParticleCreateComputeJob()
