@@ -406,7 +406,14 @@ void GpuParticleSystemWorld::stop(uint64 instanceId, bool destroyAllParticles)
 {
     for (int i = mEmitterInstances.size()-1; i >= 0; --i) {
         if(mEmitterInstances[i].mId == instanceId) {
-            stopEmitter(i, destroyAllParticles);
+            EmitterInstance& emitterInstance = mEmitterInstances[i];
+            emitterInstance.mRun = false;
+            if(destroyAllParticles || emitterInstance.mParticleCount + emitterInstance.mParticleAddedThisFrameCount == 0) {
+                destroyEmitterInstance(i);
+            }
+            else {
+                freeUnusedBuckets(emitterInstance);
+            }
         }
     }
 }
@@ -598,22 +605,6 @@ uint64 GpuParticleSystemWorld::start(const GpuParticleSystem* particleSystem, No
     return start(particleSystem->getEmitters(), parentNode, parentPos, parentRot);
 }
 
-void GpuParticleSystemWorld::stopEmitter(int instanceIndex, bool destroyAllParticles)
-{
-    if(instanceIndex < 0 || (uint32)instanceIndex >= mEmitterInstances.size()) {
-        return;
-    }
-
-    mEmitterInstances[instanceIndex].mRun = false;
-    if(destroyAllParticles || mEmitterInstances[instanceIndex].mParticleCount + mEmitterInstances[instanceIndex].mParticleAddedThisFrameCount == 0) {
-        freeBuckets(mEmitterInstances[instanceIndex]);
-        mEmitterInstances.erase(mEmitterInstances.begin()+instanceIndex);
-    }
-    else {
-        freeUnusedBuckets(mEmitterInstances[instanceIndex]);
-    }
-}
-
 void GpuParticleSystemWorld::updateInstances(float elapsedTime)
 {
     for (int i = 0; i < (int)mEmitterInstances.size(); ++i) {
@@ -630,9 +621,7 @@ void GpuParticleSystemWorld::updateInstances(float elapsedTime)
 
             // check if emitter stopped long enough time
             if(emitterInstance.mTimeSinceStopped >= emitterCore->getMaxParticleLifetime() || emitterInstance.mParticleCount == 0) {
-                // remove
-                freeBuckets(emitterInstance);
-                mEmitterInstances.erase(mEmitterInstances.begin()+i);
+                destroyEmitterInstance(i);
                 --i;
                 continue;
             }
@@ -1713,6 +1702,15 @@ void GpuParticleSystemWorld::destroyParticleRenderable(const String& datablockNa
     }
 
     delete particleRenderableToDel;
+}
+
+void GpuParticleSystemWorld::destroyEmitterInstance(int instanceIndex)
+{
+    freeBuckets(mEmitterInstances[instanceIndex]);
+//        mEmitterInstances.erase(mEmitterInstances.begin()+instanceIndex);
+
+    mEmitterInstances[instanceIndex] = mEmitterInstances[mEmitterInstances.size()-1];
+    mEmitterInstances.pop_back();
 }
 
 GpuParticleSystemWorld::ParticleRenderable* GpuParticleSystemWorld::getRenderableForEmitterCore(const GpuParticleEmitter* emitterCore) const

@@ -378,7 +378,9 @@ private:
     void emitParticleUpdateGpu(Ogre::uint32& resultEntriesCount);
     void updateInstancesToCores();
     void destroyParticleRenderable(const Ogre::String& datablockName);
-    void stopEmitter(int instanceIndex, bool destroyAllParticles);
+
+    /// Removes i-th element then swaps last element to fill the gap.
+    void destroyEmitterInstance(int instanceIndex);
     /// Can assert if not enough buckets.
     void createEmitterInstance(const GpuParticleEmitter* gpuParticleEmitterCore, const Ogre::Matrix4& matParent, Ogre::Node* parentNode, Ogre::uint64 idCounter);
 
