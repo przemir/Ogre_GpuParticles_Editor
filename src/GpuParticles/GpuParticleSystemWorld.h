@@ -80,6 +80,10 @@ public:
         Ogre::uint64 mId = 0;
         bool mRun = true;
 
+        /// Generally ignored emitter instance is hidden and frozen.
+        /// It's particle entries won't be uploaded for creating, updating and render.
+        bool mIgnore = false;
+
         Ogre::Vector3 mPos = Ogre::Vector3::ZERO;
         Ogre::Quaternion mRot;
 
@@ -230,6 +234,10 @@ public:
 
     void processTime(float elapsedTime);
 
+    /// Generally ignored emitter instance is hidden and frozen.
+    /// If true, it's particle entries won't be uploaded for creating, updating and render.
+    void setIgnoreEmitterInstance(Ogre::uint64 instanceId, bool ignore);
+
 public:
 
     Ogre::ReadOnlyBufferPacked* getParticleBufferAsReadOnly() const;
@@ -379,7 +387,7 @@ private:
     Ogre::uint32 uploadBucketsForInstance(Ogre::uint32 *& RESTRICT_ALIAS entryBucketBuffer, size_t emitterInstanceIndex, Ogre::uint32 lastParticle, Ogre::uint32 particleCount);
 
     void emitParticleCreateGpu();
-    void emitParticleUpdateGpu(Ogre::uint32& resultEntriesCount);
+    void emitParticleUpdateGpu(const Ogre::uint32& entriesCount);
     void updateInstancesToCores();
     void destroyParticleRenderable(const Ogre::String& datablockName);
 
@@ -394,7 +402,7 @@ private:
     Ogre::uint64 getNextId() const;
 
     /// Uploads buckets offsets and primitive range for renderable objects.
-    void prepareForRender();
+    void prepareEntriesForUpdateAndRender(Ogre::uint32& resultEntriesCount);
 
     EmitterInstanceIdToListIndex::iterator findEmitterInstanceIt(int listIndex);
 
