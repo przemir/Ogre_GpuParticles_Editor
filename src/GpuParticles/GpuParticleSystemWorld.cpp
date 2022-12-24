@@ -818,6 +818,22 @@ GpuParticleSystemWorld::Info GpuParticleSystemWorld::getInfo() const
     return info;
 }
 
+GpuParticleSystemWorld::Info GpuParticleSystemWorld::getEmitterInstanceInfo(uint64 instanceId) const
+{
+    Info info;
+    std::pair<EmitterInstanceIdToListIndex::const_iterator, EmitterInstanceIdToListIndex::const_iterator> idItRange
+            = mEmitterInstanceIdToListIndex.equal_range(instanceId);
+    for(EmitterInstanceIdToListIndex::const_iterator it = idItRange.first; it != idItRange.second; ++it) {
+        int emitterListIndex = it->second;
+        const EmitterInstance& emitter = mEmitterInstances[emitterListIndex];
+        info.mAliveParticles += emitter.mParticleCount + emitter.mParticleAddedThisFrameCount;
+        info.mParticlesCreated += emitter.mParticleCreatedCount;
+        info.mParticlesAddedThisFrame += emitter.mParticleAddedThisFrameCount;
+        info.mUsedBucketsParticleCapacity += emitter.mBucketIndexes.size()*mBucketSize;
+    }
+    return info;
+}
+
 const GpuParticleSystemWorld::AffectorList& GpuParticleSystemWorld::getRegisteredAffectorList() const
 {
     return mRegisteredAffectorList;
@@ -923,6 +939,22 @@ bool GpuParticleSystemWorld::isFinished(uint64 instanceId) const
         finished = finished && emitterInstance.isFinished();
     }
     return finished;
+}
+
+Node* GpuParticleSystemWorld::getNode(uint64 instanceId) const
+{
+    EmitterInstanceIdToListIndex::const_iterator it = mEmitterInstanceIdToListIndex.find(instanceId);
+    if(it == mEmitterInstanceIdToListIndex.end()) {
+        return nullptr;
+    }
+
+    return mEmitterInstances[it->second].mNode;
+}
+
+bool GpuParticleSystemWorld::exists(uint64 instanceId) const
+{
+    EmitterInstanceIdToListIndex::const_iterator it = mEmitterInstanceIdToListIndex.find(instanceId);
+    return it != mEmitterInstanceIdToListIndex.end();
 }
 
 Ogre::ReadOnlyBufferPacked* GpuParticleSystemWorld::getParticleBufferAsReadOnly() const

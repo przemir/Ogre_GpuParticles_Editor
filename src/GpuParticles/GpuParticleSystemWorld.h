@@ -93,6 +93,8 @@ public:
         ParticleRenderable* mParticleRenderable = nullptr;
         int mGpuParticleEmitterIndex = 0;
         Ogre::uint64 mId = 0;
+
+        /// If emitter create new particles every turn.
         bool mRun = true;
 
         /// If true, emitter will remove itself after all particles died and mRun = false.
@@ -107,6 +109,7 @@ public:
         /// If stopped with removing, ignored emitters are destroyed immediately.
         bool mIgnore = false;
 
+        /// Node's offset.
         Ogre::Vector3 mPos = Ogre::Vector3::ZERO;
         Ogre::Quaternion mRot;
 
@@ -155,7 +158,11 @@ public:
         void onRemove(bool isLastEmitterOfSystem) {
             if(mEmitterInstanceRemoveListener) {
                 mEmitterInstanceRemoveListener->emitterInstanceAboutToBeRemoved(mId, mNode, mGpuParticleEmitter, isLastEmitterOfSystem);
-                delete mEmitterInstanceRemoveListener;
+
+                // All emitters from system uses the same listener and node.
+                if(isLastEmitterOfSystem) {
+                    delete mEmitterInstanceRemoveListener;
+                }
             }
         }
 
@@ -208,6 +215,8 @@ public:
     /// ParticleRenderable is per datablock.
     typedef std::vector<ParticleRenderable*> ParticleRenderableList;
     ParticleRenderableList mParticleRenderables;
+
+    typedef std::vector<const GpuParticleAffector*> AffectorList;
 
 public:
 
@@ -339,6 +348,13 @@ public:
     /// @returns All emitter instances with such id are not running and they have 0 particles alive.
     bool isFinished(Ogre::uint64 instanceId) const;
 
+    /// @returns node associated with particle systems (all emitters within system must point to the same node,
+    /// although node may be null).
+    Ogre::Node* getNode(Ogre::uint64 instanceId) const;
+
+    /// @returns if there is any emitter in GpuParticleSystemWorld with such instanceId.
+    bool exists(Ogre::uint64 instanceId) const;
+
 public:
 
     Ogre::ReadOnlyBufferPacked* getParticleBufferAsReadOnly() const;
@@ -354,11 +370,12 @@ public:
     /// Get diagnostic info like alive particle count etc. It iterate trough instances.
     Info getInfo() const;
 
+    /// Like getInfo, but it iterate only trough one particle system.
+    Info getEmitterInstanceInfo(Ogre::uint64 instanceId) const;
+
     inline int getTotalBuckets() const { return mBucketCount; }
     inline int getAvailableBuckets() const { return mAvailableBucketsStack.size(); }
     bool canAllocateBuckets(int buckets) const { return buckets <= (int)mAvailableBucketsStack.size(); }
-
-    typedef std::vector<const GpuParticleAffector*> AffectorList;
 
 private:
     Ogre::IndexBufferPacked* mIndexBuffer = nullptr;
@@ -500,17 +517,21 @@ private:
                                bool burstAutoRemove,
                                EmitterInstanceRemoveListener* emitterInstanceRemoveListener);
 
-    /// Removes i-th element then swaps last element to fill the gap.
+    /// Removes i-th element then swaps last element to fill the gap. Calls EmitterInstanceRemoveListener.
     void destroyEmitterInstance(int instanceIndex);
+
+    /// Removes all emitter instances. Calls EmitterInstanceRemoveListeners.
     void destroyAllEmitterInstances();
 
     ParticleRenderable* getRenderableForEmitterCore(const GpuParticleEmitter* emitterCore) const;
 
+    /// Generates next unique instanceId.
     Ogre::uint64 getNextId() const;
 
     /// Uploads buckets offsets and primitive range for renderable objects.
     void prepareEntriesForUpdateAndRender(Ogre::uint32& resultEntriesCount);
 
+    /// Finds emitter instance iterator based on mEmitterInstances index.
     EmitterInstanceIdToListIndex::iterator findEmitterInstanceIt(int listIndex);
 
     Ogre::HlmsComputeJob* getParticleCreateComputeJob();
