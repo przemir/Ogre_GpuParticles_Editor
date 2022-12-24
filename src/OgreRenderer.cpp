@@ -339,7 +339,7 @@ void OgreRenderer::updateParticleDatablock()
 
 void OgreRenderer::stopParticleSystem()
 {
-    data.mGpuParticleSystemWorld->stopAll();
+    data.mGpuParticleSystemWorld->stopAndRemoveAllImmediately();
 //    data.mGpuParticleSystemWorld->stop(data.mParticleInstanceId, true);
     data.mParticleInstanceId = 0;
 
