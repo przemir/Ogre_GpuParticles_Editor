@@ -7,22 +7,26 @@
 
 #include <GpuParticles/GpuParticleAffectorCommon.h>
 
-void GpuParticleAffectorCommon::uploadFloatTrack(float*& buffer, const std::map<float, float>& track, float defaultStartValue)
+void GpuParticleAffectorCommon::uploadFloatTrack( float *RESTRICT_ALIAS &buffer,
+                                                  const std::map<float, float> &track,
+                                                  float defaultStartValue )
 {
     // Track times
     {
         float lastTimeValue = 0.0f;
         size_t i = 0;
-        for(std::map<float, float>::const_iterator it = track.begin();
-            it != track.end(); ++it, ++i) {
-            if(i >= MaxTrackValues) {
+        for( std::map<float, float>::const_iterator it = track.begin(); it != track.end(); ++it, ++i )
+        {
+            if( i >= MaxTrackValues )
+            {
                 break;
             }
 
             lastTimeValue = it->first;
             *buffer++ = lastTimeValue;
         }
-        for (; i < MaxTrackValues; ++i) {
+        for( ; i < MaxTrackValues; ++i )
+        {
             *buffer++ = lastTimeValue;
         }
     }
@@ -31,37 +35,44 @@ void GpuParticleAffectorCommon::uploadFloatTrack(float*& buffer, const std::map<
     {
         float lastValue = defaultStartValue;
         size_t i = 0;
-        for(std::map<float, float>::const_iterator it = track.begin();
-            it != track.end(); ++it, ++i) {
-            if(i >= MaxTrackValues) {
+        for( std::map<float, float>::const_iterator it = track.begin(); it != track.end(); ++it, ++i )
+        {
+            if( i >= MaxTrackValues )
+            {
                 break;
             }
 
             lastValue = it->second;
             *buffer++ = lastValue;
         }
-        for (; i < MaxTrackValues; ++i) {
+        for( ; i < MaxTrackValues; ++i )
+        {
             *buffer++ = lastValue;
         }
     }
 }
 
-void GpuParticleAffectorCommon::uploadVector2Track(float*& buffer, const std::map<float, Ogre::Vector2>& track, const Ogre::Vector2& defaultStartValue)
+void GpuParticleAffectorCommon::uploadVector2Track( float *RESTRICT_ALIAS &buffer,
+                                                    const std::map<float, Ogre::Vector2> &track,
+                                                    const Ogre::Vector2 &defaultStartValue )
 {
-    uploadTrack<Ogre::Vector2, 2, MaxTrackValues>(buffer, track, defaultStartValue);
+    uploadTrack<Ogre::Vector2, 2, MaxTrackValues>( buffer, track, defaultStartValue );
 }
 
-void GpuParticleAffectorCommon::uploadVector3Track(float*& buffer, const std::map<float, Ogre::Vector3>& track, const Ogre::Vector3& defaultStartValue)
+void GpuParticleAffectorCommon::uploadVector3Track( float *RESTRICT_ALIAS &buffer,
+                                                    const std::map<float, Ogre::Vector3> &track,
+                                                    const Ogre::Vector3 &defaultStartValue )
 {
-    uploadTrack<Ogre::Vector3, 3, MaxTrackValues>(buffer, track, defaultStartValue);
+    uploadTrack<Ogre::Vector3, 3, MaxTrackValues>( buffer, track, defaultStartValue );
 }
 
-void GpuParticleAffectorCommon::uploadU32ToFloatArray(float*& buffer, Ogre::uint32 value)
+void GpuParticleAffectorCommon::uploadU32ToFloatArray( float *RESTRICT_ALIAS &buffer,
+                                                       Ogre::uint32 value )
 {
     //#define AS_U32PTR( x ) reinterpret_cast<uint32*RESTRICT_ALIAS>(x)
     //#endif
     //    *AS_U32PTR( buffer ) = emitterCore->mUniformSize ? 1u : 0u;      ++buffer;
 
-    *(reinterpret_cast<Ogre::uint32*RESTRICT_ALIAS>(buffer)) = value;
+    *( reinterpret_cast<Ogre::uint32 * RESTRICT_ALIAS>( buffer ) ) = value;
     ++buffer;
 }

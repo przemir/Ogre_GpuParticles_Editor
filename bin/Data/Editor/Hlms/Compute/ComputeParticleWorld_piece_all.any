@@ -1,31 +1,51 @@
 
 @piece( ParticleWorldRandom )
-struct NumberGenerator {
+struct NumberGenerator
+{
     float2 seed; // Used to generate values.
     int seedAddon;
-    
-    // Generate value from range [0; 1) (frac value cannot reach 1)
-    float rand(float2 co)
-    {
-       return frac(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
-    }
-    
-    float generate()
-    {
-        seed.x += seedAddon;
-        return rand(seed);
-    }
 };
+
+// Generate value from range [0; 1) (frac value cannot reach 1)
+float NumberGenerator_rand(float2 co)
+{
+@property( syntax == hlsl )
+	#define fract frac
+@end
+   return fract(sin(dot(co.xy, float2(12.9898,78.233))) * 43758.5453);
+}
+
+float NumberGenerator_generate( inout NumberGenerator rng )
+{
+	rng.seed.x += rng.seedAddon;
+	return NumberGenerator_rand(rng.seed);
+}
 @end
 
 @piece( ParticleWorldBinarySearch )
 
-
+// For float array of times.
 #define BINARY_SEARCH_ITERATION(offset, size, mid, value, track) \
     size = (size-1)/2;                                           \
     mid = offset + size;                                         \
     if(value >= track[mid]) {                                    \
         offset = mid+1;                                          \
+    }
+    
+// For float4 array of times.
+#define BINARY_SEARCH_ITERATION_FLOAT_PACKED_IN_FLOAT4(offset, size, mid, value, track) \
+    size = (size-1)/2;                                                                  \
+    mid = offset + size;                                                                \
+    if(value >= track[mid/4][mid%4]) {                                                  \
+        offset = mid+1;                                                                 \
+    }
+    
+// For float4 array of both values and times (column 'w' will hold time)
+#define BINARY_SEARCH_ITERATION_FLOAT4(offset, size, mid, value, track)   \
+    size = (size-1)/2;                                                    \
+    mid = offset + size;                                                  \
+    if(value >= track[mid].w) {                                           \
+        offset = mid+1;                                                   \
     }
     
 // #define BINARY_SEARCH_ITERATION(left, right, mid, value, track)
@@ -51,6 +71,34 @@ uint binarySearch8(float value, float track[8])
     return offset;
 }
 
+//uint binarySearch8Float4(float value, float4 track[8])
+//{
+//    uint offset = 1;
+//    uint size = 7;
+//    uint mid;
+//    BINARY_SEARCH_ITERATION_FLOAT4(offset, size, mid, value, track)
+//    BINARY_SEARCH_ITERATION_FLOAT4(offset, size, mid, value, track)
+//    if(value < track[offset].w) {
+//        --offset;
+//    }
+//
+//    return offset;
+//}
+
+//uint binarySearch8FloatPackedInFloat4(float value, float4 track[2])
+//{
+//    uint offset = 1;
+//    uint size = 7;
+//    uint mid;
+//    BINARY_SEARCH_ITERATION_FLOAT_PACKED_IN_FLOAT4(offset, size, mid, value, track)
+//    BINARY_SEARCH_ITERATION_FLOAT_PACKED_IN_FLOAT4(offset, size, mid, value, track)
+//    if(value < track[offset/4][offset%4]) {
+//        --offset;
+//    }
+//
+//    return offset;
+//}
+
 float getFromTrack1(float time, float times[8], float values[8])
 {
     uint indexA = binarySearch8(time, times);
@@ -67,7 +115,7 @@ float getFromTrack1(float time, float times[8], float values[8])
     return lerp(values[indexA], values[indexB], percent);
 }
 
-float2 getFromTrack2(float time, float times[8], float2 values[8])
+float2 getFromTrack2(float time, float times[8], float valuesX[8], float valuesY[8])
 {
     uint indexA = binarySearch8(time, times);
     uint indexB = indexA+1;
@@ -80,10 +128,12 @@ float2 getFromTrack2(float time, float times[8], float2 values[8])
         percent = (time - times[indexA]) / timeRange;
     }
     
-    return lerp(values[indexA], values[indexB], percent);
+    return float2(
+        lerp(valuesX[indexA], valuesX[indexB], percent),
+        lerp(valuesY[indexA], valuesY[indexB], percent));
 }
 
-float3 getFromTrack3(float time, float times[8], float3 values[8])
+float3 getFromTrack3(float time, float times[8], float valuesX[8], float valuesY[8], float valuesZ[8])
 {
     uint indexA = binarySearch8(time, times);
     uint indexB = indexA+1;
@@ -96,8 +146,27 @@ float3 getFromTrack3(float time, float times[8], float3 values[8])
         percent = (time - times[indexA]) / timeRange;
     }
     
-    return lerp(values[indexA], values[indexB], percent);
+    return float3(
+        lerp(valuesX[indexA], valuesX[indexB], percent),
+        lerp(valuesY[indexA], valuesY[indexB], percent),
+        lerp(valuesZ[indexA], valuesZ[indexB], percent));
 }
+
+//float3 getFromFloat4Track3(float time, float4 values[8])
+//{
+//    uint indexA = binarySearch8Float4(time, values);
+//    uint indexB = indexA+1;
+//    if(indexB == 8) {
+//        indexB = 7;
+//    }
+//    float timeRange = values[indexB].w - values[indexA].w;
+//    float percent = 0.0f;
+//    if(timeRange > 0.0f) {
+//        percent = (time - values[indexA].w) / timeRange;
+//    }
+//    
+//    return lerp(values[indexA], values[indexB], percent).xyz;
+//}
 
 @end
 
@@ -106,12 +175,17 @@ float3 getFromTrack3(float time, float times[8], float3 values[8])
 struct Particle {
     float3 pos;
     float rot;
+    
     float4 colour;
+    
     float2 size;
     float spriteNumber;
     float lifetime;
-    float maxLifetime;
+    
     float3 dir;
+    float maxLifetime;
+    
+    float3 corePadding;
     float dirVelocity;
     
     @insertpiece(insert_particle_affectors)
@@ -135,36 +209,48 @@ struct BucketGroup
 struct EmitterCoreData {
     float4 colourA;
     float4 colourB;
+    
     float2 sizeX;
     float2 sizeY;
+    
     float2 spotAngle;
     float2 directionVelocity;
+    
     float2 lifetime;
     float nextParticleSpawnTime;
     uint spriteRange;
-    uint useSpriteTrack;
+    
     float spriteTrackTimes[8];
     float4 spriteCoordRange[8];
+    
+    uint useSpriteTrack;
     uint useFader;
     float faderStartPhaseTime;
     float faderEndPhaseTime;
+    
+    float3 spawnShapeDimensions;
+    uint spawnShape;
+    
     uint uniformSize;
     uint billboardType;
-    uint spawnShape;
-    float3 spawnShapeDimensions;
+    float2 corePadding;
     
     @insertpiece(insert_emitter_affectors)
 };
-static const uint BillboardType_Point = 0;
-static const uint BillboardType_OrientedSelf = 2;
+
+@property( syntax == hlsl )
+    #define STATIC static
+@else
+	#define STATIC
+@end
+
+STATIC const uint BillboardType_Point = 0;
+STATIC const uint BillboardType_OrientedSelf = 2;
 
 struct EmitterInstanceData {
     float4x4 emitterLocation;
+    float3 padding;
     uint run;
-    
-    float3 getEmitterPosition() { 
-        return float3(emitterLocation._41, emitterLocation._42, emitterLocation._43);
-    }
 };
 
 struct AtlasUV {
@@ -187,27 +273,36 @@ struct ParticleWorld {
 
 @piece(affector_global_gravity_emitter)
     float3 affectorGlobalGravity;
+    float affectorGlobalGravityPadding;
 @end
 @piece(affector_set_colour_track_emitter)
+    float3 affectorSetColourTrackPadding;
     uint   affectorSetColourTrackEnabled;
     float  affectorSetColourTrackTimes[8];
-    float3 affectorSetColourTrackValues[8];
+    float  affectorSetColourTrackValuesR[8];
+    float  affectorSetColourTrackValuesG[8];
+    float  affectorSetColourTrackValuesB[8];
 @end
 @piece(affector_set_alpha_track_emitter)
-    uint  affectorSetAlphaTrackEnabled;
-    float affectorSetAlphaTrackTimes[8];
-    float affectorSetAlphaTrackValues[8];
+    float3 affectorSetAlphaTrackPadding;
+    uint   affectorSetAlphaTrackEnabled;
+    float  affectorSetAlphaTrackTimes[8];
+    float  affectorSetAlphaTrackValues[8];
 @end
 @piece(affector_set_size_track_emitter)
+    float3 affectorSetSizeTrackPadding;
     uint   affectorSetSizeTrackEnabled;
     float  affectorSetSizeTrackTimes[8];
-    float2 affectorSetSizeTrackValues[8];
+    float  affectorSetSizeTrackValuesX[8];
+    float  affectorSetSizeTrackValuesY[8];
 @end
 @piece(affector_set_velocity_track_emitter)
-    uint  affectorSetVelocityTrackEnabled;
-    float affectorSetVelocityTrackTimes[8];
-    float affectorSetVelocityTrackValues[8];
+    float3 affectorSetVelocityTrackPadding;
+    uint   affectorSetVelocityTrackEnabled;
+    float  affectorSetVelocityTrackTimes[8];
+    float  affectorSetVelocityTrackValues[8];
 @end
 @piece(affector_depth_collision_emitter)
-    uint affectorDepthCollisionEnabled;
+    float3 affectorDepthCollisionPadding;
+    uint   affectorDepthCollisionEnabled;
 @end

@@ -498,11 +498,11 @@ private:
     void uploadToGpuEmitterCores();
 
     void uploadToGpuEmitterInstances();
-    void uploadEntryBucketRow(Ogre::uint32 *& RESTRICT_ALIAS entryBucketBuffer, const BucketGroupData& bucketGroup);
+	void uploadEntryBucketRow(Ogre::uint32 *RESTRICT_ALIAS & entryBucketBuffer, const BucketGroupData& bucketGroup);
     void uploadToGpuParticleWorld(float elapsedTime);
     /// @returns number of entries generated for instance
-    Ogre::uint32 uploadBucketsForInstance(Ogre::uint32 *& RESTRICT_ALIAS entryBucketBuffer, size_t emitterInstanceIndex);
-    Ogre::uint32 uploadBucketsForInstance(Ogre::uint32 *& RESTRICT_ALIAS entryBucketBuffer, size_t emitterInstanceIndex, Ogre::uint32 lastParticle, Ogre::uint32 particleCount);
+	Ogre::uint32 uploadBucketsForInstance(Ogre::uint32 *RESTRICT_ALIAS & entryBucketBuffer, size_t emitterInstanceIndex);
+	Ogre::uint32 uploadBucketsForInstance(Ogre::uint32 *RESTRICT_ALIAS & entryBucketBuffer, size_t emitterInstanceIndex, Ogre::uint32 lastParticle, Ogre::uint32 particleCount);
 
     void emitParticleCreateGpu();
     void emitParticleUpdateGpu(const Ogre::uint32& entriesCount);

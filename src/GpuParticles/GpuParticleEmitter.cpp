@@ -238,7 +238,7 @@ bool GpuParticleEmitter::isImmediateBurst() const
 
 GpuParticleEmitter* GpuParticleEmitter::clone()
 {
-    return OGRE_NEW GpuParticleEmitter(*this);
+    return new GpuParticleEmitter(*this);
 }
 
 const GpuParticleAffector* GpuParticleEmitter::getAffectorNoThrow(const Ogre::String& affectorPropertyName) const

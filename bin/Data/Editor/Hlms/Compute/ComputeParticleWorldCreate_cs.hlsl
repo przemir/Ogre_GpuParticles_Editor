@@ -77,16 +77,16 @@ void main
 @else
     particle.lifetime = -1.0;
 @end
-    particle.maxLifetime = lerp(emitterCore.lifetime.x, emitterCore.lifetime.y, random.generate());
+    particle.maxLifetime = lerp(emitterCore.lifetime.x, emitterCore.lifetime.y, NumberGenerator_generate( random ));
 
 
     particle.pos = float3(0.0, 0.0, 0.0);
     if(emitterCore.spawnShape == 1) {
         // box shape
         
-        float3 vec = float3( lerp(0.0, emitterCore.spawnShapeDimensions.x, random.generate()),
-                             lerp(0.0, emitterCore.spawnShapeDimensions.y, random.generate()),
-                             lerp(0.0, emitterCore.spawnShapeDimensions.z, random.generate()) );
+        float3 vec = float3( lerp(0.0, emitterCore.spawnShapeDimensions.x, NumberGenerator_generate( random )),
+                             lerp(0.0, emitterCore.spawnShapeDimensions.y, NumberGenerator_generate( random )),
+                             lerp(0.0, emitterCore.spawnShapeDimensions.z, NumberGenerator_generate( random )) );
         vec -= emitterCore.spawnShapeDimensions / 2.0;
         
         particle.pos = vec;
@@ -94,9 +94,9 @@ void main
     else if(emitterCore.spawnShape == 2) {
         // sphere shape
         
-        float angleH = lerp(-PI, PI, random.generate());
-        float angleV = lerp(-PI/2.0, PI/2.0, random.generate());
-        float r = lerp(0.0, emitterCore.spawnShapeDimensions.x, random.generate());
+        float angleH = lerp(-PI, PI, NumberGenerator_generate( random ));
+        float angleV = lerp(-PI/2.0, PI/2.0, NumberGenerator_generate( random ));
+        float r = lerp(0.0, emitterCore.spawnShapeDimensions.x, NumberGenerator_generate( random ));
         
         float3x3 sphereVMatrix = getXRotationMatrix(angleV);
         float3x3 sphereHMatrix = getYRotationMatrix(angleH);
@@ -110,8 +110,8 @@ void main
     else if(emitterCore.spawnShape == 3) {
         // disc shape
         
-        float angle = lerp(-PI, PI, random.generate());
-        float r = lerp(emitterCore.spawnShapeDimensions.x, emitterCore.spawnShapeDimensions.y, random.generate());
+        float angle = lerp(-PI, PI, NumberGenerator_generate( random ));
+        float r = lerp(emitterCore.spawnShapeDimensions.x, emitterCore.spawnShapeDimensions.y, NumberGenerator_generate( random ));
 
         float3x3 sphereHMatrix = getYRotationMatrix(angle);
         float3 vec = float3(0.0, 0.0, r);
@@ -126,18 +126,18 @@ void main
 @end
     
     particle.rot = 0.0;
-    float sizeX = lerp(emitterCore.sizeX.x, emitterCore.sizeX.y, random.generate());
+    float sizeX = lerp(emitterCore.sizeX.x, emitterCore.sizeX.y, NumberGenerator_generate( random ));
     float sizeY = sizeX;
     if(!emitterCore.uniformSize) {
-        sizeY = lerp(emitterCore.sizeY.x, emitterCore.sizeY.y, random.generate());
+        sizeY = lerp(emitterCore.sizeY.x, emitterCore.sizeY.y, NumberGenerator_generate( random ));
     }
     particle.size = float2(sizeX, sizeY);
-    particle.colour = lerp(emitterCore.colourA, emitterCore.colourB, random.generate());
+    particle.colour = lerp(emitterCore.colourA, emitterCore.colourB, NumberGenerator_generate( random ));
 //    particle.colour = float4(1.0, (float)localId / (float)BucketSize, 0.0, 1.0);
     particle.spriteNumber = 0.0;
     
-    float spotAngle = lerp(emitterCore.spotAngle.x, emitterCore.spotAngle.y, random.generate());
-    float spotAngle2 = lerp(-PI, PI, random.generate());
+    float spotAngle = lerp(emitterCore.spotAngle.x, emitterCore.spotAngle.y, NumberGenerator_generate( random ));
+    float spotAngle2 = lerp(-PI, PI, NumberGenerator_generate( random ));
     
     float3x3 xRot = getXRotationMatrix(spotAngle);
     float3x3 yRot = getYRotationMatrix(spotAngle2);
@@ -152,11 +152,11 @@ void main
     particle.dir = dir;
 @end
 
-    particle.dirVelocity = lerp(emitterCore.directionVelocity.x, emitterCore.directionVelocity.y, random.generate());
+    particle.dirVelocity = lerp(emitterCore.directionVelocity.x, emitterCore.directionVelocity.y, NumberGenerator_generate( random ));
     
     if(emitterCore.spriteRange != 0) {
         // particle.spriteNumber = emitterCore.spriteRange-1;
-        particle.spriteNumber = random.generate() * (float)emitterCore.spriteRange;
+        particle.spriteNumber = NumberGenerator_generate( random ) * (float)emitterCore.spriteRange;
     }
     
     @insertpiece( custom_ComputeParticleWorldCreate_end )

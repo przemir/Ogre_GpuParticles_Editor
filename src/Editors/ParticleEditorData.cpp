@@ -13,7 +13,7 @@
 
 ParticleEditorData::ParticleEditorData()
 {
-    mGpuParticleEmitterClipboard = OGRE_NEW GpuParticleEmitter();
+    mGpuParticleEmitterClipboard = new GpuParticleEmitter();
 }
 
 ParticleEditorData::~ParticleEditorData()

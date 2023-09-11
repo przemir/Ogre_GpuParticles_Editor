@@ -19,10 +19,15 @@ GpuParticleDepthCollisionAffector::GpuParticleDepthCollisionAffector()
 
 Ogre::uint32 GpuParticleDepthCollisionAffector::getAffectorEmitterBufferSize() const
 {
-    return sizeof(Ogre::uint32) * 1u;     // mEnabled (bool)
+    return sizeof(float) * 3u +           // Padding
+           sizeof(Ogre::uint32) * 1u;     // mEnabled (bool)
 }
 
 float* GpuParticleDepthCollisionAffector::prepareAffectorEmitterBuffer(float* buffer) const {
+
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
 
     GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) mEnabled);
 

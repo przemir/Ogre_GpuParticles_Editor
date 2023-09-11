@@ -5,7 +5,7 @@
 
 #include <OgreVector3.h>
 
-class GpuParticleSystem : public Ogre::FXAlloc
+class GpuParticleSystem
 {
 public:
 

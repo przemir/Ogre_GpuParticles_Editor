@@ -1,6 +1,6 @@
 
 @piece( custom_vs_attributes )
-@property(particleWorldEnabled || particle_enabled)
+@property(particleWorldEnabled)
     uint vertexId : SV_VertexID;
 @end
 @end

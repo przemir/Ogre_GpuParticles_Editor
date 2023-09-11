@@ -19,12 +19,17 @@ GpuParticleSetColourTrackAffector::GpuParticleSetColourTrackAffector()
 
 Ogre::uint32 GpuParticleSetColourTrackAffector::getAffectorEmitterBufferSize() const
 {
-    return sizeof(Ogre::uint32) * 1u +     // mEnabled (bool)
+    return sizeof(float) * 3u +            // Padding
+           sizeof(Ogre::uint32) * 1u +     // mEnabled (bool)
            sizeof(float) * 8u +            // Colour track times
            sizeof(float) * 3u * 8u;        // Colour (rgb) track values
 }
 
 float* GpuParticleSetColourTrackAffector::prepareAffectorEmitterBuffer(float* buffer) const {
+
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
 
     GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) mEnabled);
     GpuParticleAffectorCommon::uploadVector3Track(buffer, mColourTrack, Ogre::Vector3(1.0f, 1.0f, 1.0f));

@@ -5,7 +5,7 @@
  *
  */
 
-#include <GpuParticles/GpuParticleSystemResourceManager.h>
+#include "GpuParticles/GpuParticleSystemResourceManager.h"
 #include <OgreException.h>
 #include <OgreId.h>
 #include <OgreStringConverter.h>
@@ -59,7 +59,7 @@ GpuParticleSystem* GpuParticleSystemResourceManager::createParticleSystem(Ogre::
     }
 
     GpuParticleSystem* retVal =
-            OGRE_NEW GpuParticleSystem();
+            new GpuParticleSystem();
 
     mGpuParticleSystemMap[name] = GpuParticleSystemEntry( retVal, refName, filename, resourceGroup );
 

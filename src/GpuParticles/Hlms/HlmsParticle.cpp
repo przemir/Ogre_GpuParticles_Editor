@@ -14,6 +14,7 @@
 #include <OgreHlmsManager.h>
 #include <OgreCamera.h>
 #include <OgreHlms.h>
+#include <OgreRootLayout.h>
 
 #include "GpuParticles/GpuParticleSystemWorld.h"
 
@@ -113,6 +114,14 @@ float* HlmsParticleListener::preparePassBuffer(const Ogre::CompositorShadowNode*
 HlmsParticleListener* HlmsParticle::getParticleListener()
 {
     return &mParticleListener;
+}
+
+void HlmsParticle::setupRootLayout( Ogre::RootLayout &rootLayout )
+{
+    HlmsUnlit::setupRootLayout( rootLayout );
+
+    Ogre::DescBindingRange *descBindingRanges = rootLayout.mDescBindingRanges[0];
+    descBindingRanges[Ogre::DescBindingTypes::ReadOnlyBuffer].end = 6u;
 }
 
 Ogre::HlmsCache HlmsParticle::preparePassHash(const Ogre::CompositorShadowNode* shadowNode, bool casterPass, bool dualParaboloid, Ogre::SceneManager* sceneManager)
@@ -221,7 +230,10 @@ HlmsParticle* HlmsParticle::registerHlms(const Ogre::String& rootHlmsFolder,
     return hlms;
 }
 
-Ogre::uint32 HlmsParticle::fillBuffersFor(const Ogre::HlmsCache* cache, const Ogre::QueuedRenderable& queuedRenderable, bool casterPass, Ogre::uint32 lastCacheHash, Ogre::CommandBuffer* commandBuffer, bool isV1)
+Ogre::uint32 HlmsParticle::fillBuffersForV2( const Ogre::HlmsCache *cache,
+											 const Ogre::QueuedRenderable &queuedRenderable,
+											 bool casterPass, Ogre::uint32 lastCacheHash,
+											 Ogre::CommandBuffer *commandBuffer )
 {
 
     const Ogre::Renderable::CustomParameterMap &customParams = queuedRenderable.renderable->getCustomParameters();
@@ -246,8 +258,8 @@ Ogre::uint32 HlmsParticle::fillBuffersFor(const Ogre::HlmsCache* cache, const Og
         {
             Ogre::ReadOnlyBufferPacked* bucketGroupsBuffer = particleSystemWorld->getEntryBucketBufferAsReadOnly();
             int totalSize = GpuParticleSystemWorld::EntryBucketDataStructSize * particleSystemWorld->getBucketGroupsCountToRender();
-            *commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::VertexShader, BucketGroupDataTexSlot, bucketGroupsBuffer, 0, totalSize);
-            *commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::PixelShader, BucketGroupDataTexSlot, bucketGroupsBuffer, 0, totalSize);
+			*commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::VertexShader, BucketGroupDataTexSlot, bucketGroupsBuffer, 0, totalSize);
+			*commandBuffer->addCommand<Ogre::CbShaderBuffer>() = Ogre::CbShaderBuffer(Ogre::PixelShader, BucketGroupDataTexSlot, bucketGroupsBuffer, 0, totalSize);
     //        rebindTexBuffer( commandBuffer );
         }
 
@@ -263,8 +275,10 @@ Ogre::uint32 HlmsParticle::fillBuffersFor(const Ogre::HlmsCache* cache, const Og
         startBucketIndex = particleRenderable->getCachedStartBucketIndex();
     }
 
-    // Keep in mind that only the first one has to be correct, as Ogre's auto instancing will increment the base value automatically.
-    Ogre::uint32 drawId = Ogre::HlmsUnlit::fillBuffersFor(cache, queuedRenderable, casterPass, lastCacheHash, commandBuffer, isV1);
+	// Keep in mind that only the first one has to be correct, as Ogre's auto instancing will increment
+	// the base value automatically.
+	Ogre::uint32 drawId =
+		HlmsUnlit::fillBuffersForV2( cache, queuedRenderable, casterPass, lastCacheHash, commandBuffer );
 
     // After Ogre::HlmsUnlit::fillBuffersFor const buffer was already filled. There was one
     // unused value though at position [3]. Buffer  was shifted by 4.

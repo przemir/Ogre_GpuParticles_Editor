@@ -19,12 +19,17 @@ GpuParticleSetAlphaTrackAffector::GpuParticleSetAlphaTrackAffector()
 
 Ogre::uint32 GpuParticleSetAlphaTrackAffector::getAffectorEmitterBufferSize() const
 {
-    return sizeof(Ogre::uint32) * 1u +     // mEnabled (bool)
+    return sizeof(float) * 3u +            // Padding
+           sizeof(Ogre::uint32) * 1u +     // mEnabled (bool)
            sizeof(float) * 8u +            // Alpha track times
            sizeof(float) * 8u;             // Alpha track values
 }
 
 float* GpuParticleSetAlphaTrackAffector::prepareAffectorEmitterBuffer(float* buffer) const {
+
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
 
     GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) mEnabled);
     GpuParticleAffectorCommon::uploadFloatTrack(buffer, mAlphaTrack, 1.0f);

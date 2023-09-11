@@ -107,15 +107,17 @@ void HlmsParticleDatablock::copyFromUnlitDatablockImpl(const Ogre::HlmsUnlitData
 
     // hack to access HlmsUnlitDatablock::cloneImpl which is protected member.
     {
-        class HlmsUnlitDatablockProtectedAccessor : Ogre::HlmsUnlitDatablock {
+        class HlmsUnlitDatablockProtectedAccessor : public Ogre::HlmsUnlitDatablock
+        {
         public:
-            virtual void cloneImpl( HlmsDatablock *datablock ) const override
+            void cloneImpl( HlmsDatablock *datablock ) const override
             {
-                Ogre::HlmsUnlitDatablock::cloneImpl(datablock);
+                Ogre::HlmsUnlitDatablock::cloneImpl( datablock );
             }
         };
 
-        const HlmsUnlitDatablockProtectedAccessor* hlmsUnlitDatablockProtectedAccessor = static_cast<const HlmsUnlitDatablockProtectedAccessor*>(srcDatablock);
+        const HlmsUnlitDatablockProtectedAccessor *hlmsUnlitDatablockProtectedAccessor =
+            static_cast<const HlmsUnlitDatablockProtectedAccessor *>( srcDatablock );
         hlmsUnlitDatablockProtectedAccessor->cloneImpl( this );
     }
 

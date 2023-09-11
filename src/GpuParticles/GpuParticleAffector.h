@@ -29,7 +29,7 @@ namespace rapidjson
 
 #endif
 
-class GpuParticleAffector : public Ogre::FXAlloc
+class GpuParticleAffector
 {
 public:
     GpuParticleAffector();
@@ -37,9 +37,11 @@ public:
     virtual GpuParticleAffector* clone() const = 0;
 
     /// Additional space per particle (every particle hold by GpuParticleSystemWorld).
+    /// Should be aligned to sizeof(float)*4.
     virtual Ogre::uint32 getAffectorParticleBufferSize() const { return 0; }
 
     /// Additional space per emitter core (not instance).
+    /// Should be aligned to sizeof(float)*4.
     virtual Ogre::uint32 getAffectorEmitterBufferSize() const { return 0; }
 
     /// Uploads affector data to emitter core struct in gpu.

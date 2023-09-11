@@ -19,12 +19,17 @@ GpuParticleSetVelocityTrackAffector::GpuParticleSetVelocityTrackAffector()
 
 Ogre::uint32 GpuParticleSetVelocityTrackAffector::getAffectorEmitterBufferSize() const
 {
-    return sizeof(Ogre::uint32) * 1u +     // mEnabled (bool)
+    return sizeof(float) * 3u +            // Padding
+           sizeof(Ogre::uint32) * 1u +     // mEnabled (bool)
            sizeof(float) * 8u +            // Velocity track times
            sizeof(float) * 8u;             // Velocity track values
 }
 
 float* GpuParticleSetVelocityTrackAffector::prepareAffectorEmitterBuffer(float* buffer) const {
+
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
+    *buffer++ = 0.0f;
 
     GpuParticleAffectorCommon::uploadU32ToFloatArray(buffer, (Ogre::uint32) mEnabled);
     GpuParticleAffectorCommon::uploadFloatTrack(buffer, mVelocityTrack, 1.0f);

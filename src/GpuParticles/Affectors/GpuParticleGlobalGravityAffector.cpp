@@ -19,7 +19,8 @@ GpuParticleGlobalGravityAffector::GpuParticleGlobalGravityAffector()
 
 Ogre::uint32 GpuParticleGlobalGravityAffector::getAffectorEmitterBufferSize() const
 {
-    return sizeof(float) * 3u;             // Gravity
+    return sizeof(float) * 3u +           // Gravity
+           sizeof(float) * 1u;            // Padding
 }
 
 float* GpuParticleGlobalGravityAffector::prepareAffectorEmitterBuffer(float* buffer) const {
@@ -27,6 +28,7 @@ float* GpuParticleGlobalGravityAffector::prepareAffectorEmitterBuffer(float* buf
     *buffer++ = mGravity.x;
     *buffer++ = mGravity.y;
     *buffer++ = mGravity.z;
+    *buffer++ = 0.0f;
 
     return buffer;
 }

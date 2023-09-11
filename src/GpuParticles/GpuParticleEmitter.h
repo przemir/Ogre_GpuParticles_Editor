@@ -14,7 +14,7 @@
 #include "GpuParticleAffector.h"
 
 /// Recipe how to create/update particles. Is tied to one datablock.
-class GpuParticleEmitter : public Ogre::FXAlloc
+class GpuParticleEmitter
 {  
 public:
 

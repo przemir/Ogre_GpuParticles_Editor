@@ -244,7 +244,7 @@ void GpuParticleSystemTreeWidget::fillEmitterAffectorsToGui(QTreeWidgetItem* ite
 
 void GpuParticleSystemTreeWidget::createEmitterAction()
 {
-    GpuParticleEmitter* emitter = OGRE_NEW GpuParticleEmitter();
+    GpuParticleEmitter* emitter = new GpuParticleEmitter();
     mGpuParticleSystem->addEmitter(emitter);
 
     QSignalBlocker bl(mParticleEmittersTree);
@@ -295,7 +295,7 @@ void GpuParticleSystemTreeWidget::copyAction()
 
 void GpuParticleSystemTreeWidget::pasteToNewEmitterAction()
 {
-    GpuParticleEmitter* emitter = OGRE_NEW GpuParticleEmitter();
+    GpuParticleEmitter* emitter = new GpuParticleEmitter();
     data.pasteToGpuParticleEmitter(emitter);
     mGpuParticleSystem->addEmitter(emitter);
 
