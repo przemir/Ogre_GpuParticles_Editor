@@ -47,10 +47,10 @@ public:
         ~ParticleRenderable();
 
         //Overrides from Renderable
-        virtual const Ogre::LightList& getLights(void) const;
-        virtual void getRenderOperation( Ogre::v1::RenderOperation& op, bool casterPass );
-        virtual void getWorldTransforms( Ogre::Matrix4* xform ) const;
-        virtual bool getCastsShadows(void) const;
+        virtual const Ogre::LightList& getLights(void) const override;
+        virtual void getRenderOperation( Ogre::v1::RenderOperation& op, bool casterPass ) override;
+        virtual void getWorldTransforms( Ogre::Matrix4* xform ) const override;
+        virtual bool getCastsShadows(void) const override;
         //        virtual bool getUseIdentityWorldMatrix(void) const          { return true; }
 
         void clearCachedData()

@@ -34,8 +34,9 @@ OgreQtAppParticleEditorSystem::OgreQtAppParticleEditorSystem(OgreSDLGame* ogreSd
 
     mHlmsShadersOutputDirectoryName = "OgreGpuParticleEditor";
 
-    //    mPreferredRenderer = Renderer::OpenGL;
     mPreferredRenderer = Renderer::Direct3D;
+//    mPreferredRenderer = Renderer::OpenGL;
+//    mPreferredRenderer = Renderer::Vulkan;
 }
 
 void OgreQtAppParticleEditorSystem::initialize(const Ogre::String& windowTitle)

@@ -15,7 +15,7 @@ class GpuParticleSetAlphaTrackAffector : public GpuParticleAffector
 {
 public:
     GpuParticleSetAlphaTrackAffector();
-    virtual GpuParticleAffector* clone() const override { return new GpuParticleSetAlphaTrackAffector(*this); }
+    virtual GpuParticleAffector* clone() const override { return OGRE_NEW GpuParticleSetAlphaTrackAffector(*this); }
 
     virtual Ogre::uint32 getAffectorParticleBufferSize() const override { return 0; }
 

@@ -24,7 +24,9 @@ public:
 
         OpenGL,
 
-        Direct3D
+        Direct3D,
+
+        Vulkan
     };
 
 

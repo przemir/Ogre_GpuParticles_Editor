@@ -7,36 +7,46 @@
 #endif
 #endif
 
-#include "OgreRoot.h"
-#include "OgreException.h"
+#if OGRE_VERSION_MAJOR >= 3
+#include "OgreAbiUtils.h"
+#endif
 #include "OgreConfigFile.h"
+#include "OgreException.h"
+#include "OgreRoot.h"
 
 #include "OgreCamera.h"
 #include "OgreItem.h"
 
-#include "OgreHlmsUnlit.h"
-#include "OgreHlmsPbs.h"
-#include "OgreHlmsManager.h"
 #include "OgreArchiveManager.h"
+#include "OgreHlmsManager.h"
+#include "OgreHlmsPbs.h"
+#include "OgreHlmsUnlit.h"
 
 #include "Compositor/OgreCompositorManager2.h"
 
-#include "OgreOverlaySystem.h"
 #include "OgreOverlayManager.h"
+#include "OgreOverlaySystem.h"
 
 #include "OgreTextureGpuManager.h"
 
-#include "OgreWindowEventUtilities.h"
 #include "OgreWindow.h"
+#include "OgreWindowEventUtilities.h"
 
 #include "OgreFileSystemLayer.h"
 
-#include "OgreHlmsDiskCache.h"
 #include "OgreGpuProgramManager.h"
+#include "OgreHlmsDiskCache.h"
 
 #include "OgreLogManager.h"
 
 #include "OgrePlatformInformation.h"
+
+#if OGRE_VERSION_MAJOR >= 3
+#include "OgreAtmosphereComponent.h"
+#ifdef OGRE_BUILD_COMPONENT_ATMOSPHERE
+#include <OgreAtmosphereNpr.h>
+#endif
+#endif
 
 #include <fstream>
 
@@ -45,12 +55,12 @@
 #endif
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE || OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
-    #include "OSX/macUtils.h"
-    #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
-        #include "System/iOS/iOSUtils.h"
-    #else
-        #include "System/OSX/OSXUtils.h"
-    #endif
+#    include "OSX/macUtils.h"
+#    if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+#        include "System/iOS/iOSUtils.h"
+#    else
+#        include "System/OSX/OSXUtils.h"
+#    endif
 #endif
 
 //namespace Demo
@@ -116,7 +126,7 @@
         if( !Ogre::FileSystemLayer::createDirectory( folderPath ) )
             return false;
 
-        std::ofstream of( (folderPath + fileToSave).c_str(),
+        std::ofstream of( ( folderPath + fileToSave ).c_str(),
                           std::ios::out | std::ios::binary | std::ios::app );
         if( !of )
             return false;
@@ -126,31 +136,47 @@
     //-----------------------------------------------------------------------------------
     void OgreSDLSystem::initialize( const Ogre::String &windowTitle )
     {
-    #if OGRE_USE_SDL2
-        //if( SDL_Init( SDL_INIT_EVERYTHING ) != 0 )
-        if( SDL_Init( SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK |
-                      SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS ) != 0 )
+#if OGRE_USE_SDL2
+        // if( SDL_Init( SDL_INIT_EVERYTHING ) != 0 )
+        if( SDL_Init( SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER |
+                      SDL_INIT_EVENTS ) != 0 )
         {
             OGRE_EXCEPT( Ogre::Exception::ERR_INTERNAL_ERROR, "Cannot initialize SDL2!",
                          "OgreSDLSystem::initialize" );
         }
-    #endif
+#endif
 
         Ogre::String pluginsPath;
         // only use plugins.cfg if not static
-    #ifndef OGRE_STATIC_LIB
-    #if OGRE_DEBUG_MODE && !((OGRE_PLATFORM == OGRE_PLATFORM_APPLE) || (OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS))
+#ifndef OGRE_STATIC_LIB
+#    if OGRE_DEBUG_MODE && \
+        !( ( OGRE_PLATFORM == OGRE_PLATFORM_APPLE ) || ( OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS ) )
         pluginsPath = mPluginsFolder + "plugins_d.cfg";
-    #else
+#    else
         pluginsPath = mPluginsFolder + mPluginsCfg;
-    #endif
-    #endif
+#    endif
+#endif
 
+#if OGRE_VERSION_MAJOR >= 3
+#if OGRE_PLATFORM != OGRE_PLATFORM_ANDROID
+        const Ogre::String cfgPath = mWriteAccessFolder + mOgreCfg;
+#else
+        const Ogre::String cfgPath = "";
+#endif
+
+        {
+            const Ogre::AbiCookie abiCookie = Ogre::generateAbiCookie();
+            mRoot = OGRE_NEW Ogre::Root( &abiCookie, pluginsPath, cfgPath,
+                                         mWriteAccessFolder + "Ogre.log", windowTitle );
+        }
+#else
         mRoot = OGRE_NEW Ogre::Root( pluginsPath,
                                      mWriteAccessFolder + mOgreCfg,
                                      mWriteAccessFolder + "Ogre.log" );
+#endif
 
 //        mStaticPluginLoader.install( mRoot );
+
         // enable sRGB Gamma Conversion mode by default for all renderers,
         // but still allow to override it via config dialog
         Ogre::RenderSystemList::const_iterator itor = mRoot->getAvailableRenderers().begin();
@@ -176,51 +202,63 @@
             customConfigHandle();
         }
 
-    #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
-        if(!mRoot->getRenderSystem())
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+        if( !mRoot->getRenderSystem() )
         {
             Ogre::RenderSystem *renderSystem =
-                    mRoot->getRenderSystemByName( "Metal Rendering Subsystem" );
+                mRoot->getRenderSystemByName( "Metal Rendering Subsystem" );
             mRoot->setRenderSystem( renderSystem );
         }
-    #endif
+#endif
+#if OGRE_PLATFORM == OGRE_PLATFORM_ANDROID
+        if( !mRoot->getRenderSystem() )
+        {
+            Ogre::RenderSystem *renderSystem =
+                mRoot->getRenderSystemByName( "Vulkan Rendering Subsystem" );
+            mRoot->setRenderSystem( renderSystem );
+        }
+#endif
 
         mRoot->initialise( false, windowTitle );
 
-        Ogre::ConfigOptionMap& cfgOpts = mRoot->getRenderSystem()->getConfigOptions();
+        Ogre::ConfigOptionMap &cfgOpts = mRoot->getRenderSystem()->getConfigOptions();
 
-        int width   = 1280;
-        int height  = 720;
+        int width = 1280;
+        int height = 720;
 
-    #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+#if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
         {
             Ogre::Vector2 screenRes = iOSUtils::getScreenResolutionInPoints();
             width = static_cast<int>( screenRes.x );
             height = static_cast<int>( screenRes.y );
         }
-    #endif
+#endif
 
         Ogre::ConfigOptionMap::iterator opt = cfgOpts.find( "Video Mode" );
+#if OGRE_VERSION_MAJOR >= 3
         if( opt != cfgOpts.end() )
+#else
+        if( opt != cfgOpts.end() && !opt->second.currentValue.empty() )
+#endif
         {
-            //Ignore leading space
-            const Ogre::String::size_type start = opt->second.currentValue.find_first_of("012356789");
-            //Get the width and height
-            Ogre::String::size_type widthEnd = opt->second.currentValue.find(' ', start);
+            // Ignore leading space
+            const Ogre::String::size_type start = opt->second.currentValue.find_first_of( "012356789" );
+            // Get the width and height
+            Ogre::String::size_type widthEnd = opt->second.currentValue.find( ' ', start );
             // we know that the height starts 3 characters after the width and goes until the next space
-            Ogre::String::size_type heightEnd = opt->second.currentValue.find(' ', widthEnd+3);
+            Ogre::String::size_type heightEnd = opt->second.currentValue.find( ' ', widthEnd + 3 );
             // Now we can parse out the values
-            width   = Ogre::StringConverter::parseInt( opt->second.currentValue.substr( 0, widthEnd ) );
-            height  = Ogre::StringConverter::parseInt( opt->second.currentValue.substr(
-                                                           widthEnd+3, heightEnd ) );
+            width = Ogre::StringConverter::parseInt( opt->second.currentValue.substr( 0, widthEnd ) );
+            height = Ogre::StringConverter::parseInt(
+                opt->second.currentValue.substr( widthEnd + 3, heightEnd ) );
         }
 
         Ogre::NameValuePairList params;
         bool fullscreen = Ogre::StringConverter::parseBool( cfgOpts["Full Screen"].currentValue );
     #if OGRE_USE_SDL2
-        int screen = 0;
-        int posX = SDL_WINDOWPOS_CENTERED_DISPLAY(screen);
-        int posY = SDL_WINDOWPOS_CENTERED_DISPLAY(screen);
+        unsigned int screen = 0;
+        unsigned int posX = SDL_WINDOWPOS_CENTERED_DISPLAY(screen);
+        unsigned int posY = SDL_WINDOWPOS_CENTERED_DISPLAY(screen);
 
         if(fullscreen)
         {
@@ -230,14 +268,14 @@
 
         mSdlWindow = SDL_CreateWindow(
                     windowTitle.c_str(),    // window title
-                    posX,               // initial x position
-                    posY,               // initial y position
+                    static_cast<int>(posX),               // initial x position
+                    static_cast<int>(posY),               // initial y position
                     width,              // width, in pixels
                     height,             // height, in pixels
                     SDL_WINDOW_SHOWN
                       | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0) | SDL_WINDOW_RESIZABLE );
 
-        //Get the native whnd
+        // Get the native whnd
         SDL_SysWMinfo wmInfo;
         SDL_VERSION( &wmInfo.version );
 
@@ -292,9 +330,13 @@
         params.insert( std::make_pair("FSAA", cfgOpts["FSAA"].currentValue) );
         params.insert( std::make_pair("vsync", cfgOpts["VSync"].currentValue) );
         params.insert( std::make_pair("reverse_depth", "Yes" ) );
+#if OGRE_VERSION_MAJOR >= 3
+        params.insert( std::make_pair( "memoryless_depth_buffer", "Yes" ) );
+#endif
         initMiscParamsListener( params );
 
-        mRenderWindow = Ogre::Root::getSingleton().createRenderWindow( windowTitle, width, height,
+        mRenderWindow = Ogre::Root::getSingleton().createRenderWindow( windowTitle,
+                                                                       static_cast<uint32_t>(width), static_cast<uint32_t>(height),
                                                                        fullscreen, &params );
 
         mOverlaySystem = OGRE_NEW Ogre::v1::OverlaySystem();
@@ -331,8 +373,13 @@
         saveTextureCache();
         saveHlmsDiskCache();
 
-        if( mSceneManager )
+        if( mSceneManager ) {
+#if OGRE_VERSION_MAJOR >= 3
+            Ogre::AtmosphereComponent *atmosphere = mSceneManager->getAtmosphereRaw();
+            OGRE_DELETE atmosphere;
+#endif
             mSceneManager->removeRenderQueueListener( mOverlaySystem );
+        }
 
         OGRE_DELETE mOverlaySystem;
         mOverlaySystem = 0;
@@ -411,13 +458,14 @@
                 int w,h;
                 SDL_GetWindowSize( mSdlWindow, &w, &h );
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-                mRenderWindow->requestResolution( w, h );
+                mRenderWindow->requestResolution( static_cast<uint32_t>(w), static_cast<uint32_t>(h) );
 #endif
                 mRenderWindow->windowMovedOrResized();
                 break;
             case SDL_WINDOWEVENT_RESIZED:
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-                mRenderWindow->requestResolution( evt.window.data1, evt.window.data2 );
+                mRenderWindow->requestResolution( static_cast<uint32_t>(evt.window.data1),
+                                                  static_cast<uint32_t>(evt.window.data2) );
 #endif
                 mRenderWindow->windowMovedOrResized();
                 break;
@@ -525,6 +573,18 @@
         Ogre::Archive *rwAccessFolderArchive = archiveManager.load( mWriteAccessFolder,
                                                                     "FileSystem", true );
 
+#if OGRE_VERSION_MAJOR >= 3
+        if( mUseMicrocodeCache /* mUsePipelineCache */ )
+        {
+            const Ogre::String filename = "pipelineCache.cache";
+            if( rwAccessFolderArchive->exists( filename ) )
+            {
+                Ogre::DataStreamPtr pipelineCacheFile = rwAccessFolderArchive->open( filename );
+                mRoot->getRenderSystem()->loadPipelineCache( pipelineCacheFile );
+            }
+        }
+#endif
+
         if( mUseMicrocodeCache )
         {
             //Make sure the microcode cache is enabled.
@@ -539,6 +599,9 @@
 
         if( mUseHlmsDiskCache )
         {
+            const size_t numThreads =
+                std::max<size_t>( 1u, Ogre::PlatformInformation::getNumLogicalCores() );
+
             for( size_t i=Ogre::HLMS_LOW_LEVEL + 1u; i<Ogre::HLMS_MAX; ++i )
             {
                 Ogre::Hlms *hlms = hlmsManager->getHlms( static_cast<Ogre::HlmsTypes>( i ) );
@@ -553,7 +616,12 @@
                         {
                             Ogre::DataStreamPtr diskCacheFile = rwAccessFolderArchive->open( filename );
                             diskCache.loadFrom( diskCacheFile );
+
+#if OGRE_VERSION_MAJOR >= 3
+                            diskCache.applyTo( hlms, numThreads );
+#else
                             diskCache.applyTo( hlms );
+#endif
                         }
                     }
                     catch( Ogre::Exception& )
@@ -588,7 +656,11 @@
                 for( size_t i=Ogre::HLMS_LOW_LEVEL + 1u; i<Ogre::HLMS_MAX; ++i )
                 {
                     Ogre::Hlms *hlms = hlmsManager->getHlms( static_cast<Ogre::HlmsTypes>( i ) );
+#if OGRE_VERSION_MAJOR >= 3
+                    if( hlms && hlms->isShaderCodeCacheDirty() )
+#else
                     if( hlms )
+#endif
                     {
                         diskCache.copyFrom( hlms );
 
@@ -607,6 +679,15 @@
                 Ogre::DataStreamPtr shaderCacheFile = rwAccessFolderArchive->create( filename );
                 Ogre::GpuProgramManager::getSingleton().saveMicrocodeCache( shaderCacheFile );
             }
+
+#if OGRE_VERSION_MAJOR >= 3
+            if( mUseMicrocodeCache /* mUsePipelineCache */ )
+            {
+                const Ogre::String filename = "pipelineCache.cache";
+                Ogre::DataStreamPtr shaderCacheFile = rwAccessFolderArchive->create( filename );
+                mRoot->getRenderSystem()->savePipelineCache( shaderCacheFile );
+            }
+#endif
 
             archiveManager.unload( mWriteAccessFolder );
         }
@@ -669,7 +750,7 @@
         Ogre::StringVector::const_iterator libraryFolderPathEn;
 
         Ogre::ArchiveManager &archiveManager = Ogre::ArchiveManager::getSingleton();
-        
+
         {
             //Create & Register HlmsUnlit
             //Get the path to all the subdirectories used by HlmsUnlit
@@ -745,6 +826,19 @@
         // Initialise, parse scripts etc
         Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups( true );
 
+#if OGRE_VERSION_MAJOR >= 3
+        try
+        {
+            mRoot->getHlmsManager()->loadBlueNoise();
+        }
+        catch( Ogre::FileNotFoundException &e )
+        {
+            Ogre::LogManager::getSingleton().logMessage( e.getFullDescription(), Ogre::LML_CRITICAL );
+            Ogre::LogManager::getSingleton().logMessage(
+                "WARNING: Blue Noise textures could not be loaded.", Ogre::LML_CRITICAL );
+        }
+#endif
+
         // Initialize resources for LTC area lights and accurate specular reflections (IBL)
         Ogre::Hlms *hlms = mRoot->getHlmsManager()->getHlms( Ogre::HLMS_PBS );
         OGRE_ASSERT_HIGH( dynamic_cast<Ogre::HlmsPbs*>( hlms ) );
@@ -765,7 +859,7 @@
     //-----------------------------------------------------------------------------------
     void OgreSDLSystem::chooseSceneManager(void)
     {
-#if OGRE_DEBUG_MODE
+#if (OGRE_VERSION_MAJOR >= 3 && OGRE_DEBUG_MODE >= OGRE_DEBUG_HIGH) || (OGRE_VERSION_MAJOR < 3 && OGRE_DEBUG_MODE)
         //Debugging multithreaded code is a PITA, disable it.
         const size_t numThreads = 1;
 #else
@@ -818,6 +912,35 @@
     void OgreSDLSystem::initMiscParamsListener( Ogre::NameValuePairList &params )
     {
     }
+#if OGRE_VERSION_MAJOR >= 3
+    //-----------------------------------------------------------------------------------
+    void OgreSDLSystem::createAtmosphere( Ogre::Light *sunLight )
+    {
+#ifdef OGRE_BUILD_COMPONENT_ATMOSPHERE
+        {
+            Ogre::AtmosphereComponent *atmosphere = mSceneManager->getAtmosphereRaw();
+            OGRE_DELETE atmosphere;
+        }
+
+        Ogre::AtmosphereNpr *atmosphere =
+            OGRE_NEW Ogre::AtmosphereNpr( mRoot->getRenderSystem()->getVaoManager() );
+
+        {
+            // Preserve the Power Scale explicitly set by the sample
+            Ogre::AtmosphereNpr::Preset preset = atmosphere->getPreset();
+            preset.linkedLightPower = sunLight->getPowerScale();
+            atmosphere->setPreset( preset );
+        }
+
+        atmosphere->setSunDir(
+            sunLight->getDirection(),
+            std::asin( Ogre::Math::Clamp( -sunLight->getDirection().y, -1.0f, 1.0f ) ) /
+                Ogre::Math::PI );
+        atmosphere->setLight( sunLight );
+        atmosphere->setSky( mSceneManager, true );
+#endif
+    }
+#endif
     //-----------------------------------------------------------------------------------
     void OgreSDLSystem::stopCompositor(void)
     {

@@ -35,13 +35,13 @@ public:
     virtual Ogre::uint32 getPassBufferSize(const Ogre::CompositorShadowNode* shadowNode,
                                            bool casterPass,
                                            bool dualParaboloid,
-                                           Ogre::SceneManager* sceneManager) const;
+                                           Ogre::SceneManager* sceneManager) const override;
 
     virtual float* preparePassBuffer(const Ogre::CompositorShadowNode* shadowNode,
                                      bool casterPass,
                                      bool dualParaboloid,
                                      Ogre::SceneManager* sceneManager,
-                                     float* passBufferPtr);
+                                     float* passBufferPtr) override;
     Ogre::Matrix4 getPrevCameraVP() const;
     Ogre::Vector2 getCameraProjectionAB() const;
 
@@ -61,9 +61,10 @@ public:
 private:
 
     HlmsParticleListener mParticleListener;
+
+    /// Those slots must match bindings inside files 500.Structs_piece_vs_piece_ps.hlsl and glsl
     static const int ParticleDataTexSlot = 5;
     static const int BucketGroupDataTexSlot = 3;
-    static const int EmitterDataTexSlot = 4; // deprecated
     static const int EmitterCoreDataTexSlot = 2;
 
 public:
@@ -73,26 +74,34 @@ public:
         setListener(&mParticleListener);
         mParticleListener.setHlms(this);
 
-        mTexUnitSlotStart = 6u;
-        mSamplerUnitSlotStart = 6u;
+        // Porting to OgreNext4.0
+        // https://github.com/OGRECave/ogre-next/commit/9ee6dd793481b5378e9a68fd445a34435b802e1b
+        // https://github.com/OGRECave/ogre-next/commit/396f2298e04f7f4bfb648e8494549d23b4cb9bd4
 
-//        mReservedTexSlots = 2u;
+//        mTexUnitSlotStart = 6u; // should be calculated later
+//        mSamplerUnitSlotStart = 6u;
+
+        mReservedTexSlots = 6u;
+        mReservedTexBufferSlots = 0u;
     }
 
     ~HlmsParticle() override = default;
 
-    void setupRootLayout( Ogre::RootLayout &rootLayout ) override;
+    void setupRootLayout( Ogre::RootLayout &rootLayout, size_t tid  ) override;
 
     Ogre::HlmsCache preparePassHash( const Ogre::CompositorShadowNode *shadowNode, bool casterPass,
                                      bool dualParaboloid, Ogre::SceneManager *sceneManager ) override;
 
     void calculateHashForPreCreate(Ogre::Renderable* renderable, Ogre::PiecesMap* inOutPieces) override;
 
-    void notifyPropertiesMergedPreGenerationStep(void) {
+    Ogre::Hlms::PropertiesMergeStatus notifyPropertiesMergedPreGenerationStep(size_t     tid,
+                                                                              Ogre::PiecesMap *inOutPieces) override {
 
-        HlmsUnlit::notifyPropertiesMergedPreGenerationStep();
+        Hlms::PropertiesMergeStatus status = HlmsUnlit::notifyPropertiesMergedPreGenerationStep(tid, inOutPieces);
 
         // setTextureReg(Ogre::VertexShader, "texParticleData", ParticleDataTexSlot);
+
+        return status;
     }
 
     static void getAdditionalDefaultPaths(Ogre::String &outDataFolderPath, Ogre::StringVector& outLibraryFoldersPaths, bool withHlmsPathPrefix = true) {

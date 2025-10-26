@@ -13,7 +13,7 @@ ResizableStackedWidget::ResizableStackedWidget(QWidget* parent)
     : QWidget(parent)
 {
     mLayout = new QVBoxLayout();
-    mLayout->setMargin(0);
+    mLayout->setContentsMargins(0, 0, 0, 0);
     setLayout(mLayout);
 
     mCurrentIndex = -1;

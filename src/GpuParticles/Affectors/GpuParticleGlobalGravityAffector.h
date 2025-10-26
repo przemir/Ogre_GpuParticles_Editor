@@ -15,7 +15,7 @@ class GpuParticleGlobalGravityAffector : public GpuParticleAffector
 {
 public:
     GpuParticleGlobalGravityAffector();
-    virtual GpuParticleAffector* clone() const override { return new GpuParticleGlobalGravityAffector(*this); }
+    virtual GpuParticleAffector* clone() const override { return OGRE_NEW GpuParticleGlobalGravityAffector(*this); }
 
     virtual Ogre::uint32 getAffectorParticleBufferSize() const override { return 0; }
 

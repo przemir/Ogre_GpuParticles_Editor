@@ -3,6 +3,11 @@ fragment_program Postprocess/FillColour_ps_GLSL glsl
 	source FillColour_ps.glsl
 }
 
+fragment_program Postprocess/FillColour_ps_VK glslvk
+{
+	source FillColour_ps.glsl
+}
+
 fragment_program Postprocess/FillColour_ps_HLSL hlsl
 {
 	source FillColour_ps.hlsl
@@ -19,6 +24,7 @@ fragment_program Postprocess/FillColour_ps_Metal metal
 fragment_program Postprocess/FillColour_ps unified
 {
 	delegate Postprocess/FillColour_ps_GLSL
+	delegate Postprocess/FillColour_ps_VK
 	delegate Postprocess/FillColour_ps_HLSL
 	delegate Postprocess/FillColour_ps_Metal
 }

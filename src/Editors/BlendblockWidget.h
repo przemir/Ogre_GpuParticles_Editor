@@ -46,7 +46,7 @@ signals:
 private:
     Ogre::HlmsDatablock* mEditedDatablock = nullptr;
     bool mEditedDatablockCaster = false;
-    QCheckBox* mAlphaToCoverageCheckBox;
+    QComboBox* mAlphaToCoverageComboBox;
     QCheckBox* mBlendChannelMaskCheckBox[4];
     QCheckBox* mIsTransparentMaskCheckBox[2];
     QCheckBox* mSeparateBlendCheckBox;

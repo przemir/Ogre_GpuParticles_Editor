@@ -55,9 +55,15 @@ BlendblockWidget::BlendblockWidget()
 void BlendblockWidget::createGui(QGridLayout* gridLayout, int& row)
 {
     {
-        mAlphaToCoverageCheckBox = new QCheckBox(tr("Alpha to coverage"));
-        connect(mAlphaToCoverageCheckBox, SIGNAL(clicked(bool)), this, SLOT(onBlendblockModified()));
-        gridLayout->addWidget(mAlphaToCoverageCheckBox, row++, 1, 1, 1);
+        gridLayout->addWidget(new QLabel(tr("Alpha to coverage")), row, 0);
+        mAlphaToCoverageComboBox = new QComboBox();
+
+        mAlphaToCoverageComboBox->addItem("A2cDisabled", Ogre::HlmsBlendblock::A2cDisabled);
+        mAlphaToCoverageComboBox->addItem("A2cEnabled", Ogre::HlmsBlendblock::A2cEnabled);
+        mAlphaToCoverageComboBox->addItem("A2cEnabledMsaaOnly", Ogre::HlmsBlendblock::A2cEnabledMsaaOnly);
+
+        connect(mAlphaToCoverageComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onBlendblockModified()));
+        gridLayout->addWidget(mAlphaToCoverageComboBox, row++, 1, 1, 1);
     }
 
     {
@@ -170,8 +176,9 @@ void BlendblockWidget::blendblockToGui()
     const Ogre::HlmsBlendblock* blendblock = srcBlendblock ? srcBlendblock : &dummy;
 
     {
-        QSignalBlocker bl(mAlphaToCoverageCheckBox);
-        mAlphaToCoverageCheckBox->setChecked(blendblock->mAlphaToCoverageEnabled);
+        QSignalBlocker bl(mAlphaToCoverageComboBox);
+        int index = mAlphaToCoverageComboBox->findData(blendblock->mAlphaToCoverage);
+        mAlphaToCoverageComboBox->setCurrentIndex(index);
     }
 
     {
@@ -287,7 +294,7 @@ void BlendblockWidget::onBlendblockModified()
         blendblock = *oldBlendblock;
     }
 
-    blendblock.mAlphaToCoverageEnabled = mAlphaToCoverageCheckBox->isChecked();
+    blendblock.mAlphaToCoverage = static_cast<Ogre::HlmsBlendblock::A2CSetting>(mAlphaToCoverageComboBox->currentData().toInt());
 
     {
         Ogre::uint8 blendChannelMask = 0;

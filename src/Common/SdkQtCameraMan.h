@@ -313,7 +313,11 @@ namespace OgreQtBites
         -----------------------------------------------------------------------------*/
         virtual void injectWheelMove(const QWheelEvent& evt)
         {
+#if QT_VERSION_MAJOR >= 6
+            int relZ = evt.angleDelta().y();
+#else
             int relZ = evt.delta();
+#endif
             if (mStyle == CS_ORBIT)
             {
                 Ogre::Real dist = (mCamera->getPosition() - mTarget->_getDerivedPosition()).length();

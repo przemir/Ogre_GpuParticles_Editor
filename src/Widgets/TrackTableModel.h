@@ -190,21 +190,21 @@ template<class T>
 void TrackTableModel<T>::setRowValue(int row, const QPair<float, T>& value)
 {
     mValues[row] = value;
-    emit dataChanged(QModelIndex().child(row, 0), QModelIndex().child(row, 1));
+    emit dataChanged(index(row, 0), index(row, 1));
 }
 
 template<class T>
 void TrackTableModel<T>::setTime(int row, float time)
 {
     mValues[row].first = time;
-    emit dataChanged(QModelIndex().child(row, 0), QModelIndex().child(row, 0));
+    emit dataChanged(index(row, 0), index(row, 0));
 }
 
 template<class T>
 void TrackTableModel<T>::setRowSecondValue(int row, const T& value)
 {
     mValues[row].second = value;
-    emit dataChanged(QModelIndex().child(row, 1), QModelIndex().child(row, 1));
+    emit dataChanged(index(row, 1), index(row, 1));
 }
 
 

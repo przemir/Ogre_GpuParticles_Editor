@@ -116,9 +116,9 @@ HlmsParticleListener* HlmsParticle::getParticleListener()
     return &mParticleListener;
 }
 
-void HlmsParticle::setupRootLayout( Ogre::RootLayout &rootLayout )
+void HlmsParticle::setupRootLayout( Ogre::RootLayout &rootLayout, size_t tid  )
 {
-    HlmsUnlit::setupRootLayout( rootLayout );
+    HlmsUnlit::setupRootLayout( rootLayout, tid );
 
     Ogre::DescBindingRange *descBindingRanges = rootLayout.mDescBindingRanges[0];
     descBindingRanges[Ogre::DescBindingTypes::ReadOnlyBuffer].end = 6u;
@@ -294,7 +294,6 @@ void HlmsParticle::frameEnded()
 {
     Ogre::RenderSystem* renderSystem = getRenderSystem();
     renderSystem->_setTexture(ParticleDataTexSlot, 0, false);
-    renderSystem->_setTexture(EmitterDataTexSlot, 0, false);
     renderSystem->_setTexture(BucketGroupDataTexSlot, 0, false);
     renderSystem->_setTexture(EmitterCoreDataTexSlot, 0, false);
 

@@ -21,11 +21,10 @@ compositor_node ParticleEditorNode
 	//See section '4.1.4.2 Depth Textures' of the manual for an explanation.
 	texture depthTextureCopy target_width target_height PFG_D32_FLOAT keep_content
 
-
 	target rt0
 	{
 		pass render_quad
-	    {
+	  {
 			load
 			{
 				all				clear
@@ -51,10 +50,17 @@ compositor_node ParticleEditorNode
 	target rt_renderwindow
 	{
 		pass render_quad
-	    {
+	  {
 			load
 			{
 				colour			dont_care
+				depth	dont_care
+				stencil	dont_care
+			}
+			store
+			{
+				depth	dont_care
+				stencil	dont_care
 			}
         
 			//Ignore the alpha channel
@@ -64,6 +70,13 @@ compositor_node ParticleEditorNode
 		
 		pass render_scene
 		{
+			// We must set depth & stencil to dont_care because the
+			// Window's DepthBuffer is Memoryless by default and Overlays break the pass.
+			load
+			{
+				depth	dont_care
+				stencil	dont_care
+			}
 			store
 			{
 				depth	dont_care

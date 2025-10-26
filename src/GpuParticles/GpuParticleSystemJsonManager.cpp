@@ -133,7 +133,7 @@ void GpuParticleSystemJsonManager::loadGpuParticleSystem(const rapidjson::Value&
             const rapidjson::Value &emitter = array[i];
             if( emitter.IsObject() )
             {
-                GpuParticleEmitter *particleEmitterCore = new GpuParticleEmitter();
+                GpuParticleEmitter *particleEmitterCore = OGRE_NEW GpuParticleEmitter();
                 loadGpuParticleEmitter( emitter, particleEmitterCore );
                 gpuParticleSystem->addEmitter(particleEmitterCore);
             }

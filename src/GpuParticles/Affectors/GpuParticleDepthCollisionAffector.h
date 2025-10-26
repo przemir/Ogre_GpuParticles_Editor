@@ -15,7 +15,7 @@ class GpuParticleDepthCollisionAffector : public GpuParticleAffector
 {
 public:
     GpuParticleDepthCollisionAffector();
-    virtual GpuParticleAffector* clone() const override { return new GpuParticleDepthCollisionAffector(*this); }
+    virtual GpuParticleAffector* clone() const override { return OGRE_NEW GpuParticleDepthCollisionAffector(*this); }
 
     virtual Ogre::uint32 getAffectorParticleBufferSize() const override { return 0; }
 

@@ -32,6 +32,7 @@
 #include <QAction>
 #include <QToolBar>
 #include <QDockWidget>
+#include <QActionGroup>
 
 #include "OgreQtAppParticleEditorSystem.h"
 #include "OgreRenderer.h"
@@ -481,8 +482,13 @@ void MainWindow::createAffectorWidget(GpuParticleAffectorWidget* widget)
 
 void MainWindow::cleanFileNameToSave(QString& fileName)
 {
+#if QT_VERSION_MAJOR >= 6
+    QString pattern = "[" + QRegularExpression::escape("/\\.,") + "]";
+    fileName = fileName.remove(QRegularExpression(pattern));
+#else
     QString pattern = "[" + QRegExp::escape("/\\.,") + "]";
     fileName = fileName.remove(QRegExp(pattern));
+#endif
 }
 
 void MainWindow::onSceneInitialized()

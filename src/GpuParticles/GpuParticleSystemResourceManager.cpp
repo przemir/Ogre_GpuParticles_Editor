@@ -59,7 +59,7 @@ GpuParticleSystem* GpuParticleSystemResourceManager::createParticleSystem(Ogre::
     }
 
     GpuParticleSystem* retVal =
-            new GpuParticleSystem();
+            OGRE_NEW GpuParticleSystem();
 
     mGpuParticleSystemMap[name] = GpuParticleSystemEntry( retVal, refName, filename, resourceGroup );
 

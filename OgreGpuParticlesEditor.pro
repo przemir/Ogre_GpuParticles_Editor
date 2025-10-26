@@ -62,7 +62,8 @@ OGRE_ENABLED {
     INCLUDEPATH += $${OGRE_COMPONENTS}/Hlms/Unlit/include
     INCLUDEPATH += $${OGRE_COMPONENTS}/Hlms/Pbs/include
 
-    LIBS += -L$${OGRE_BUILD}/lib
+    debug:LIBS += -L$${OGRE_BUILD}/lib/Debug
+    release:LIBS += -L$${OGRE_BUILD}/lib/Release
 
 #linux-g++ {
 #    LIBS += -L$${OGRE_DEPENDENCIES}/lib
@@ -75,9 +76,10 @@ OGRE_ENABLED {
     INCLUDEPATH += $${OGRE_ROOT}/OgreMain/include
     INCLUDEPATH += $${OGRE_DEPENDENCIES}/include
     INCLUDEPATH += $${OGRE_ROOT}/Samples/Common/include
+    INCLUDEPATH += $${OGRE_ROOT}/Components/Atmosphere/include
 
-    release:LIBS *= -lOgreMain -lOgreOverlay -lOgreHlmsPbs -lOgreHlmsUnlit
-    debug:LIBS *= -lOgreMain_d -lOgreOverlay_d -lOgreHlmsPbs_d -lOgreHlmsUnlit_d
+    release:LIBS *= -lOgreNextMain -lOgreNextOverlay -lOgreNextHlmsPbs -lOgreNextHlmsUnlit -lOgreNextAtmosphere
+    debug:LIBS *= -lOgreNextMain_d -lOgreNextOverlay_d -lOgreNextHlmsPbs_d -lOgreNextHlmsUnlit_d -lOgreNextAtmosphere_d
 
 }
 

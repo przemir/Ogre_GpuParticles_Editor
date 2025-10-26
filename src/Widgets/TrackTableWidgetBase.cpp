@@ -155,8 +155,14 @@ QList<int> TrackTableWidgetBase::getSelectedRows() const
         rows.push_back(indexes[i].row());
     }
 
+#if QT_VERSION_MAJOR >= 6
+    QSet<int> rowsSet(rows.begin(), rows.end());
+    rows = QList<int>(rowsSet.begin(), rowsSet.end());
+    std::sort(rows.begin(), rows.end());
+#else
     rows = rows.toSet().toList();
     qSort(rows);
+#endif
     return rows;
 }
 

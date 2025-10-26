@@ -47,6 +47,11 @@ void OgreQtSystem::customConfigHandle()
         renderOrder.push_back("OpenGL 3+");
         renderOrder.push_back("Direct3D11");
     }
+    else if(mPreferredRenderer == Renderer::Vulkan) {
+        renderOrder.push_back("Vulkan");
+        renderOrder.push_back("OpenGL 3+");
+        renderOrder.push_back("Direct3D11");
+    }
 
     for (std::vector<Ogre::String>::iterator iter = renderOrder.begin(); iter != renderOrder.end(); iter++)
     {

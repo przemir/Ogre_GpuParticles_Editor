@@ -168,6 +168,8 @@ void OgreRenderer::createScene()
         Ogre::IdString depthTextureCompositorNode = "ParticleEditorNode";
         Ogre::IdString depthTextureId = "depthTextureCopy";
 
+        mSceneMgr->getRenderQueue()->setRenderQueueMode(15, Ogre::RenderQueue::FAST);
+
         data.mGpuParticleSystemWorld = OGRE_NEW GpuParticleSystemWorld(
                     Ogre::Id::generateNewId<Ogre::MovableObject>(),
                     &mSceneMgr->_getEntityMemoryManager( Ogre::SCENE_DYNAMIC ),
