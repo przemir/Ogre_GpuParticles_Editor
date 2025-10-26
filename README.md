@@ -1,6 +1,6 @@
 # Ogre_GpuParticles_Editor
 
-Particle editor for gpu particles for OgreNext. Currently only DirectX11 is working (shaders are written only in HLSL).
+Particle editor for gpu particles for OgreNext.
 Editor uses Ogre and Qt as dependencies.
 
 ![screen](screens/OgreGpuParticlesEditor_screen.jpg 'Screen')
