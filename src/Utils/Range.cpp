@@ -6,6 +6,7 @@
  */
 #include "Range.h"
 #include <limits>
+#include <cmath>
 #include <cstdlib>
 
 const Geometry::Range Geometry::Range::UnitRange(0.0f, 1.0f);
