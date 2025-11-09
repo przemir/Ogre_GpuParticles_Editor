@@ -10,6 +10,8 @@
 
 #include "OgreSDLSystem.h"
 
+#include <QGuiApplication>
+
 class QWindow;
 
 /// Customize OgreSDLSystem to allow Qt usage.
@@ -19,8 +21,13 @@ public:
 
     enum class Renderer
     {
-        /// It does not matter
+        /// It does not matter.
+        /// Chooses first available renderer (order from plugin.cfg/plugin_d.cfg).
         None,
+
+        /// Open renderer chooser dialog.
+        /// Some parameters like "Video Mode" or "Full Screen" won't be used.
+        Choose,
 
         OpenGL,
 
@@ -46,10 +53,20 @@ public:
     virtual void registerHlms(void) override;
     virtual void setHlmsShadersOutputFolder();
 
+    Renderer getRealRenderer() const;
+
 protected:
     QWindow* mQtWindow;
     Ogre::String mHlmsShadersOutputDirectoryName;
     Renderer mPreferredRenderer;
+    Renderer mRealRenderer;
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX && QT_VERSION_MAJOR >= 6
+    struct {
+        Display *display;           // The X11 display
+        unsigned long window;       // The X11 window
+    } x11;
+#endif
 };
 
 #endif

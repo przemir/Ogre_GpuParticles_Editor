@@ -37,9 +37,11 @@ void QTOgreWindow::render()
     // How we tied in the render function for OGre3D with QWindow's render function. This is what gets call repeatedly. Note that we don't call this function directly; rather we use the renderNow() function to call this method as we don't want to render the Ogre3D scene unless everything is set up first.
     // That is what renderNow() does.
     // Theoretically you can have one function that does this check but from my experience it seems better to keep things separate and keep the render function as simple as possible.
-    Ogre::WindowEventUtilities::messagePump();
-    mOgreSystem->getRoot()->renderOneFrame();
 
+    // Commented because I don't see difference in usage and It causes crash when resizing because of callstack loop.
+    // Ogre::WindowEventUtilities::messagePump();
+
+    mOgreSystem->getRoot()->renderOneFrame();
 }
 
 void QTOgreWindow::initialize()
@@ -115,7 +117,13 @@ bool QTOgreWindow::eventFilter(QObject *target, QEvent *event)
         {
             if (isExposed() && mOgreSystem->getRenderWindow() != NULL)
             {
-                mOgreSystem->getRenderWindow()->requestResolution(this->width(), this->height());
+                // Only OpenGL on linux needs Ogre::Window::requestResolution as camera will be rotated somehow.
+                // For OpenGL on windows and Direct3D11 this is not necessary.
+                // For Vulkan it causes crash.
+                if(mOgreSystem->getRealRenderer() == OgreQtSystem::Renderer::OpenGL) {
+                    mOgreSystem->getRenderWindow()->requestResolution(this->width(), this->height());
+                }
+
                 mOgreSystem->getRenderWindow()->windowMovedOrResized();
                 mOgreSystem->getCamera()->setAspectRatio(Ogre::Real(mOgreSystem->getRenderWindow()->getWidth()) / Ogre::Real(mOgreSystem->getRenderWindow()->getHeight()));
             }
