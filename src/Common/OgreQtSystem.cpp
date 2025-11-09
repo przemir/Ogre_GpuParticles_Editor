@@ -21,6 +21,7 @@ OgreQtSystem::OgreQtSystem(OgreSDLGame* ogreSdlGame, Ogre::String resourcePath, 
     , mQtWindow(nullptr)
     , mHlmsShadersOutputDirectoryName("QtOgreApp")
     , mPreferredRenderer(Renderer::None)
+    , mRealRenderer(Renderer::None)
 {
     mUseCustomConfigHandle = true;
 }
