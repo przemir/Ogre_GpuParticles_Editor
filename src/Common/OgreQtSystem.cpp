@@ -22,6 +22,9 @@ OgreQtSystem::OgreQtSystem(OgreSDLGame* ogreSdlGame, Ogre::String resourcePath, 
     , mHlmsShadersOutputDirectoryName("QtOgreApp")
     , mPreferredRenderer(Renderer::None)
     , mRealRenderer(Renderer::None)
+    , mEnableUnlitPbsHlmsShadersDebug(false)
+    , mEnableCustomHlmsShadersDebug(false)
+    , mEnableComputeHlmsShadersDebug(false)
 {
     mUseCustomConfigHandle = true;
 }
@@ -141,32 +144,42 @@ void OgreQtSystem::setHlmsShadersOutputFolder()
 {
     Ogre::HlmsManager* hlmsManager = Ogre::Root::getSingleton().getHlmsManager();
     Ogre::HlmsCompute* hlmsCompute = hlmsManager->getComputeHlms();
-    QString path = "./hlmsShadersDebug";
-    Ogre::String ogrePath = "./hlmsShadersDebug";
-#ifdef SHOW_OUTPUT_SHADERS
-    //Enable shader dump, folder must be created first
-    QDir().mkdir( "./hlmsShadersDebug/" );
-    QDir().mkdir( path );
-    QDir().mkdir( path + "/compute/" );
-    hlmsCompute->setDebugOutputPath( true, true, ogrePath + "/compute/" );
-#else
-    hlmsCompute->setDebugOutputPath( false, false );
-#endif
+    Ogre::String ogrePath = !mHlmsShadersOutputDirectoryName.empty() ? "./hlmsShadersDebug/" + mHlmsShadersOutputDirectoryName : "./hlmsShadersDebug";
+    QString path = QString::fromStdString(ogrePath);
+
+    if(mEnableUnlitPbsHlmsShadersDebug || mEnableCustomHlmsShadersDebug || mEnableComputeHlmsShadersDebug) {
+        QDir().mkdir( "./hlmsShadersDebug/" );
+        if(!mHlmsShadersOutputDirectoryName.empty()) {
+            QDir().mkdir( path );
+        }
+    }
+
+    if(mEnableComputeHlmsShadersDebug) {
+        QDir().mkdir( path + "/compute/" );
+        hlmsCompute->setDebugOutputPath( mEnableComputeHlmsShadersDebug, mEnableComputeHlmsShadersDebug, ogrePath + "/compute/" );
+    }
+    else {
+        hlmsCompute->setDebugOutputPath( false, false );
+    }
 
     for (int i = ((int)Ogre::HLMS_LOW_LEVEL)+1; i < Ogre::HLMS_MAX; ++i) {
         Ogre::Hlms* hlms = hlmsManager->getHlms(Ogre::HlmsTypes(i));
         if(!hlms) {
             continue;
         }
-        bool enable = i >= Ogre::HLMS_USER0 && i <= Ogre::HLMS_USER3;
-#ifdef SHOW_OUTPUT_SHADERS
-        Ogre::String typeNameStr = hlms->getTypeNameStr();
-        QString typeNameQStr = QString::fromStdString(typeNameStr);
-        QDir().mkdir( path + "/" + typeNameQStr + "/" );
-        hlms->setDebugOutputPath( enable, enable, ogrePath + "/" + typeNameStr + "/" );
-#else
-        hlms->setDebugOutputPath( false, false );
-#endif
+        bool enable = i == Ogre::HLMS_UNLIT || i == Ogre::HLMS_PBS
+                ? mEnableUnlitPbsHlmsShadersDebug
+                : mEnableCustomHlmsShadersDebug;
+
+        if(enable) {
+            Ogre::String typeNameStr = hlms->getTypeNameStr();
+            QString typeNameQStr = QString::fromStdString(typeNameStr);
+            QDir().mkdir( path + "/" + typeNameQStr + "/" );
+            hlms->setDebugOutputPath( enable, enable, ogrePath + "/" + typeNameStr + "/" );
+        }
+        else {
+            hlms->setDebugOutputPath( false, false );
+        }
     }
 }
 

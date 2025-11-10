@@ -57,9 +57,23 @@ public:
 
 protected:
     QWindow* mQtWindow;
+
+    /// Subfolder of "./hlmsShadersDebug" where debug shaders will be print.
+    /// May be empty, then shaders will be generated in "./hlmsShadersDebug/<type>/"
+    /// instead of "./hlmsShadersDebug/<mHlmsShadersOutputDirectoryName>/<type>/"
     Ogre::String mHlmsShadersOutputDirectoryName;
+
+    /// If preferred renderer is in available renderer list, chooses it.
+    /// Otherwise first available renderer is choosen.
     Renderer mPreferredRenderer;
+
+    /// What renderer was really selected by the application.
     Renderer mRealRenderer;
+
+    /// Should print shaders to "./hlmsShadersDebug/<mHlmsShadersOutputDirectoryName>/<type>/" folder?
+    bool mEnableUnlitPbsHlmsShadersDebug;
+    bool mEnableCustomHlmsShadersDebug;
+    bool mEnableComputeHlmsShadersDebug;
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX && QT_VERSION_MAJOR >= 6
     struct {

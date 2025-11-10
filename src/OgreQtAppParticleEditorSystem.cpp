@@ -32,12 +32,17 @@ OgreQtAppParticleEditorSystem::OgreQtAppParticleEditorSystem(OgreSDLGame* ogreSd
 
     mProjectPrefix = "cache/OgreGpuParticleEditor_";
 
-    mHlmsShadersOutputDirectoryName = "OgreGpuParticleEditor";
+    mHlmsShadersOutputDirectoryName = "";
+//    mHlmsShadersOutputDirectoryName = "OgreGpuParticleEditor";
 
-    // mPreferredRenderer = Renderer::Choose;
     mPreferredRenderer = Renderer::Direct3D;
 //    mPreferredRenderer = Renderer::OpenGL;
 //    mPreferredRenderer = Renderer::Vulkan;
+//    mPreferredRenderer = Renderer::Choose;
+
+    mEnableUnlitPbsHlmsShadersDebug = false;
+    mEnableCustomHlmsShadersDebug = true;
+    mEnableComputeHlmsShadersDebug = true;
 }
 
 void OgreQtAppParticleEditorSystem::initialize(const Ogre::String& windowTitle)
